@@ -1,0 +1,47 @@
+<div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
+  <div class="mb-10 flex flex-col items-center justify-center">
+    <h1 class="text-paper font-display text-4xl leading-tight">Bienvenido a</h1>
+    <h1 class="text-ember italic font-display text-4xl leading-tight">Reel</h1>
+    <div class="w-12 h-12 bg-ember"></div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6 flex-1" novalidate>
+    <app-input
+      formControlName="email"
+      [label]="'Correo electrónico'"
+      [placeholder]="'tu@correo.com'"
+      [autocomplete]="'email'"
+      [textColor]="'paper'"
+      [error]="emailError"
+    />
+
+    <app-input
+      formControlName="password"
+      [type]="'password'"
+      [label]="'Contraseña'"
+      [placeholder]="'••••••••'"
+      [autocomplete]="'current-password'"
+      [textColor]="'paper'"
+      [error]="passwordError"
+    />
+
+    <div class="mt-auto flex flex-col gap-3">
+      <app-button
+        [type]="'submit'"
+        [variant]="'accent'"
+        [size]="'lg'"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <app-spinner size="sm" [dark]="false" />
+        }
+        Iniciar sesión
+      </app-button>
+
+      <app-button [variant]="'primary'" [size]="'lg'" [fullWidth]="true" [disabled]="isLoading()">
+        Regístrate
+      </app-button>
+    </div>
+  </form>
+</div>

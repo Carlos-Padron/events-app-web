@@ -1,3 +1,77 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* fonts */
+@import '@fontsource-variable/fraunces';
+/* @import '@fontsource-variable/fraunces/italic.css'; */
+@import '@fontsource-variable/dm-sans';
+
 @import 'tailwindcss';
+
+/*  Design system tokens */
+
+@theme {
+  /* Color pallet Warm Film */
+  --color-ink: #1f1b16;
+  --color-ink-soft: #2c2620;
+  --color-paper: #f5efe5;
+  --color-paper-warm: #eee5d3;
+  --color-ember: #E89B3D;
+  --color-ember-deep: #C97A1F;
+  --color-ember-ligth: #F5C97A;
+  --color-sun: #f2c063;
+  --color-crimson: #b8412e;
+  --color-crimson-light: #d4654f;
+  --color-sage: #87a878;
+  --color-sage-light: #a8c49b;
+  --color-earth: #6b5c4c;
+  --color-bone: #e5dcc9;
+
+  /* fonts */
+  --font-display: 'Fraunces Variable', serif;
+  --font-body: 'DM Sans Variable', sans-serif;
+}
+
+/* ─── Estilos base globales ───────────────────────────── */
+@layer base {
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  /* Keyframes compartidos */
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(1.4);
+    }
+  }
+  @keyframes spin-custom {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ─── Utilidades globales reutilizables ───────────────── */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  .animate-spin-reel {
+    animation: spin-custom 0.8s linear infinite;
+  }
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+}
