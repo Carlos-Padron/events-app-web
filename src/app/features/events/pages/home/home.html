@@ -1,0 +1,80 @@
+<div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
+
+  <!-- Header -->
+  <div class="flex items-start justify-between pb-10">
+    <div>
+      <p class="section-label text-ember mb-4">✦ Reel</p>
+      <h1 class="font-display text-5xl font-light text-paper leading-tight">
+        Tus <em class="italic text-ember">films</em>
+      </h1>
+    </div>
+    <app-button [icon]="true" variant="primary" size="md" routerLink="/eventos/crear" aria-label="Crear nuevo film">
+      +
+    </app-button>
+  </div>
+
+  @if (events().length === 0) {
+
+    <!-- Empty state -->
+    <div class="flex-1 flex flex-col items-center justify-center text-center gap-6">
+      <div class="w-20 h-20 bg-ember/10 rounded-full flex items-center justify-center">
+        <span class="font-display text-4xl text-ember">✦</span>
+      </div>
+      <div>
+        <h2 class="font-display text-2xl font-light text-paper mb-2">
+          Aún no hay <em class="italic text-ember">films</em>.
+        </h2>
+        <p class="text-sm text-earth max-w-65 leading-relaxed">
+          Crea tu primer rollo y compártelo con las personas que quieres que capturen el momento.
+        </p>
+      </div>
+      <app-button variant="accent" size="lg" routerLink="/eventos/crear">
+        Crear primer film ✦
+      </app-button>
+    </div>
+
+  } @else {
+
+    <div class="flex flex-col gap-4">
+
+      <!-- Live events — large poster -->
+      @for (event of liveEvents(); track event.id) {
+        <div [class]="cardClass(event)" class="aspect-4/3">
+          <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div class="absolute inset-x-0 top-4 px-4">
+            <span class="inline-flex items-center gap-1.5 text-[9px] tracking-widest uppercase font-semibold text-sun">
+              <span class="w-1.5 h-1.5 bg-sun rounded-full animate-pulse-dot"></span> En vivo
+            </span>
+          </div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <h2 class="font-display text-3xl text-paper font-light leading-tight mb-1">{{ event.title }}</h2>
+            <p class="text-paper/50 text-xs">{{ event.details }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Past events -->
+      @if (hasLive() && pastEvents().length > 0) {
+        <p class="section-label text-earth mt-2 mb-1">Anteriores</p>
+      }
+
+      @for (event of pastEvents(); track event.id) {
+        <div [class]="cardClass(event)" class="aspect-video">
+          <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between">
+            <div>
+              <h2 class="font-display text-xl text-paper font-light leading-tight">{{ event.title }}</h2>
+              <p class="text-paper/50 text-xs mt-0.5">{{ event.details }}</p>
+            </div>
+            <span class="text-[9px] tracking-widest uppercase font-semibold"
+              [class]="event.status === 'revealed' ? 'text-ember' : 'text-earth/60'">
+              {{ statusLabel[event.status] }}
+            </span>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

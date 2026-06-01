@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
@@ -9,11 +10,12 @@ import { Divider } from '../../../../components/divider/divider';
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex-1 flex flex-col' },
-  imports: [ReactiveFormsModule, Input, Button, Spinner, Divider],
+  imports: [ReactiveFormsModule, RouterLink, Input, Button, Spinner, Divider],
   templateUrl: './login.html',
 })
 export class Login {
-  private fb = inject(FormBuilder);
+  private fb     = inject(FormBuilder);
+  private router = inject(Router);
 
   form = this.fb.group({
     email:    ['', [Validators.required, Validators.email]],
@@ -46,6 +48,6 @@ export class Login {
     this.isLoading.set(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     this.isLoading.set(false);
-    console.log(this.form.value);
+    this.router.navigate(['/eventos']);
   }
 }

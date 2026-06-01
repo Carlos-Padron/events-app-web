@@ -6,6 +6,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
@@ -21,7 +22,7 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
   selector: 'app-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex-1 flex flex-col' },
-  imports: [ReactiveFormsModule, Input, Button, Spinner, Divider],
+  imports: [ReactiveFormsModule, RouterLink, Input, Button, Spinner, Divider],
   templateUrl: './register.html',
 })
 export class Register {
