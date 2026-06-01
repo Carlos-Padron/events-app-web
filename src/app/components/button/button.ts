@@ -13,19 +13,26 @@ type ButtonSize = 'sm' | 'md' | 'lg';
   `,
 })
 export class Button {
-  variant  = input<ButtonVariant>('primary');
-  size     = input<ButtonSize>('md');
-  type     = input<'button' | 'submit' | 'reset'>('button');
+  variant   = input<ButtonVariant>('primary');
+  size      = input<ButtonSize>('md');
+  type      = input<'button' | 'submit' | 'reset'>('button');
   fullWidth = input<boolean>(false);
-  disabled = input<boolean>(false);
+  disabled  = input<boolean>(false);
+  icon      = input<boolean>(false);
 
   classes = computed(() => {
-    const base = 'rounded-full font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed';
+    const base = 'rounded-full font-semibold transition-colors inline-flex items-center justify-center cursor-pointer disabled:cursor-not-allowed';
 
-    const sizes: Record<ButtonSize, string> = {
-      sm: 'px-4 py-2 text-xs',
-      md: 'px-6 py-3 text-sm',
-      lg: 'px-8 py-4 text-base',
+    const iconSizes: Record<ButtonSize, string> = {
+      sm: 'w-8 h-8 text-sm',
+      md: 'w-10 h-10 text-base',
+      lg: 'w-12 h-12 text-lg',
+    };
+
+    const textSizes: Record<ButtonSize, string> = {
+      sm: 'px-4 py-2 text-xs gap-2',
+      md: 'px-6 py-3 text-sm gap-2',
+      lg: 'px-8 py-4 text-base gap-2',
     };
 
     const variants: Record<ButtonVariant, string> = {
@@ -36,8 +43,9 @@ export class Button {
       danger:    'bg-transparent text-crimson border border-crimson hover:bg-crimson hover:text-paper disabled:opacity-40',
     };
 
-    return [base, sizes[this.size()], variants[this.variant()], this.fullWidth() ? 'w-full' : '']
-      .filter(Boolean)
-      .join(' ');
+    const sizeClass = this.icon() ? iconSizes[this.size()] : textSizes[this.size()];
+    const widthClass = !this.icon() && this.fullWidth() ? 'w-full' : '';
+
+    return [base, sizeClass, variants[this.variant()], widthClass].filter(Boolean).join(' ');
   });
 }

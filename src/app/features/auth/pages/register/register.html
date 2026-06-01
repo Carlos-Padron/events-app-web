@@ -1,1 +1,94 @@
-<p>register works!</p>
+<div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
+
+  <!-- Brand -->
+  <div class="flex flex-col pb-10">
+    <p class="section-label text-ember mb-4">✦ Reel</p>
+    <h1 class="font-display text-5xl font-light text-paper leading-tight">
+      Empieza tu<br>
+      <em class="italic text-ember">primer film.</em>
+    </h1>
+    <p class="text-earth text-sm mt-3">Crea tu cuenta y captura el momento.</p>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5" novalidate>
+
+    <div class="flex gap-4">
+      <app-input
+        class="flex-1"
+        formControlName="name"
+        [label]="'Nombre'"
+        [placeholder]="'Ana'"
+        [autocomplete]="'given-name'"
+        [textColor]="'paper'"
+        [error]="nameError"
+      />
+      <app-input
+        class="flex-1"
+        formControlName="lastName"
+        [label]="'Apellido'"
+        [placeholder]="'López'"
+        [autocomplete]="'family-name'"
+        [textColor]="'paper'"
+        [error]="lastNameError"
+      />
+    </div>
+
+    <app-input
+      formControlName="email"
+      [label]="'Correo electrónico'"
+      [placeholder]="'tu@correo.com'"
+      [autocomplete]="'email'"
+      [textColor]="'paper'"
+      [error]="emailError"
+    />
+
+    <app-input
+      formControlName="password"
+      [type]="'password'"
+      [label]="'Contraseña'"
+      [placeholder]="'••••••••'"
+      [autocomplete]="'new-password'"
+      [textColor]="'paper'"
+      [error]="passwordError"
+    />
+
+    <app-input
+      formControlName="confirmPassword"
+      [type]="'password'"
+      [label]="'Confirmar contraseña'"
+      [placeholder]="'••••••••'"
+      [autocomplete]="'new-password'"
+      [textColor]="'paper'"
+      [error]="confirmPasswordError"
+    />
+
+    <div class="flex flex-col gap-3 mt-2">
+      <app-button
+        [type]="'submit'"
+        variant="accent"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <app-spinner size="sm" />
+        }
+        Crear cuenta
+      </app-button>
+
+      <app-divider text="O" />
+
+      <app-button
+        variant="secondary"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+      >
+        Ya tengo cuenta
+      </app-button>
+    </div>
+
+  </form>
+
+</div>

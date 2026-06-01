@@ -1,0 +1,44 @@
+<div class="flex-1 overflow-y-auto flex flex-col gap-5 px-0">
+
+  <h1 class="font-display text-paper font-light text-2xl text-center">
+    ¿Cuándo se <span class="text-ember italic">revelan</span> las fotos?
+  </h1>
+
+  <!-- Option 1: On close -->
+  <button [class]="cardClass('on-close')" (click)="select('on-close')">
+    <div class="flex items-start gap-3">
+      <div class="flex-1">
+        <p class="font-display text-paper text-base font-medium mb-1">Al cerrar el evento</p>
+        <p class="text-sm text-paper/50 leading-relaxed">Las fotos se revelan inmediatamente cuando termina el evento.</p>
+      </div>
+      <div [class]="radioClass('on-close')"></div>
+    </div>
+  </button>
+
+  <!-- Option 2: Scheduled -->
+  <button [class]="cardClass('scheduled')" (click)="select('scheduled')">
+    <div class="flex items-start gap-3">
+      <div class="flex-1">
+        <p class="font-display text-paper text-base font-medium mb-1">A una hora específica</p>
+        <p class="text-sm text-paper/50 leading-relaxed">Programa el revelado para crear anticipación.</p>
+        @if (isScheduled() && formattedSchedule()) {
+          <div class="inline-flex items-center gap-1.5 bg-ember/20 text-ember text-xs font-display font-medium px-3 py-1.5 rounded-lg mt-2.5">
+            ✦ {{ formattedSchedule() }}
+          </div>
+        }
+      </div>
+      <div [class]="radioClass('scheduled')"></div>
+    </div>
+  </button>
+
+  <!-- Calendar — only when scheduled -->
+  @if (isScheduled()) {
+    <app-calendar
+      [timeLabel]="'Hora de revelado'"
+      [value]="scheduledDate()"
+      (valueChange)="scheduledDate.set($event)"
+      (timeChange)="scheduledTime.set($event)"
+    />
+  }
+
+</div>

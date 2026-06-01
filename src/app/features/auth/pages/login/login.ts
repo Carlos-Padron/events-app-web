@@ -3,12 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
+import { Divider } from '../../../../components/divider/divider';
 
 @Component({
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex-1 flex flex-col' },
-  imports: [ReactiveFormsModule, Input, Button, Spinner],
+  imports: [ReactiveFormsModule, Input, Button, Spinner, Divider],
   templateUrl: './login.html',
 })
 export class Login {

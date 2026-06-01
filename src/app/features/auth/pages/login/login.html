@@ -1,11 +1,18 @@
 <div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
-  <div class="mb-10 flex flex-col items-center justify-center">
-    <h1 class="text-paper font-display text-4xl leading-tight">Bienvenido a</h1>
-    <h1 class="text-ember italic font-display text-4xl leading-tight">Reel</h1>
-    <div class="w-12 h-12 bg-ember"></div>
+
+  <!-- Brand -->
+  <div class="flex flex-col pb-10">
+    <p class="section-label text-ember mb-4">✦ Reel</p>
+    <h1 class="font-display text-5xl font-light text-paper leading-tight">
+      Tu día,<br>
+      <em class="italic text-ember">tu film.</em>
+    </h1>
+    <p class="text-earth text-sm mt-3">Captura cada momento. Revélalo juntos.</p>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6 flex-1" novalidate>
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5" novalidate>
+
     <app-input
       formControlName="email"
       [label]="'Correo electrónico'"
@@ -25,23 +32,32 @@
       [error]="passwordError"
     />
 
-    <div class="mt-auto flex flex-col gap-3">
+    <div class="flex flex-col gap-3 mt-2">
       <app-button
         [type]="'submit'"
-        [variant]="'accent'"
-        [size]="'lg'"
+        variant="accent"
+        size="lg"
         [fullWidth]="true"
         [disabled]="isLoading()"
       >
         @if (isLoading()) {
-          <app-spinner size="sm" [dark]="false" />
+          <app-spinner size="sm" />
         }
         Iniciar sesión
       </app-button>
 
-      <app-button [variant]="'primary'" [size]="'lg'" [fullWidth]="true" [disabled]="isLoading()">
-        Regístrate
+      <app-divider text="O" />
+
+      <app-button
+        variant="secondary"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+      >
+        Crear cuenta
       </app-button>
     </div>
+
   </form>
+
 </div>

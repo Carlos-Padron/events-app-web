@@ -1,0 +1,52 @@
+<div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
+  <!-- Step indicator -->
+  <div class="flex items-center mb-10">
+    <div class="w-8">
+      @if (currentStep() > 1) {
+        <app-button [icon]="true" variant="primary" (click)="back()">
+          <i class="ph ph-caret-left"></i>
+        </app-button>
+      }
+    </div>
+    <div class="flex-1 flex items-center justify-center gap-2">
+      @for (step of stepsArray; track step) {
+        <div [class]="dotClass(step)"></div>
+      }
+    </div>
+    <div class="w-8"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8 text-center">
+    <p class="font-body uppercase text-ember mb-1">
+      Paso 0{{ currentStep() }} de 0{{ totalSteps }}
+    </p>
+    <h2 class="font-display text-3xl text-ink"></h2>
+  </div>
+
+  <!-- Step content -->
+  @switch (currentStep()) {
+    @case (1) {
+      <app-event-name-step />
+    }
+    @case (2) {
+      <app-event-date-step />
+    }
+    @case (3) {
+      <app-event-photo-filter-step />
+    }
+    @case (4) {
+      <app-event-reveal-step />
+    }
+    @case (5) {
+      <app-event-cover-step />
+    }
+  }
+
+  <!-- Actions -->
+  <div class="flex flex-col gap-3 pt-6">
+    <app-button variant="accent" size="lg" [fullWidth]="true" (click)="next()">
+      {{ isLastStep() ? 'Crear film ✦' : 'Continuar' }}
+    </app-button>
+  </div>
+</div>

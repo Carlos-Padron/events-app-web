@@ -1,0 +1,53 @@
+<div class="bg-ink-soft rounded-2xl p-5 w-full">
+  <!-- Month header -->
+  <div class="flex items-center justify-between mb-5">
+    <span class="font-display text-xl text-paper font-medium">{{ monthLabel() }}</span>
+    <div class="flex gap-1">
+      <app-button [icon]="true" variant="primary" size="sm" (click)="prevMonth()" aria-label="Mes anterior">
+        <i class="ph ph-caret-left text-paper"></i>
+      </app-button>
+      <app-button [icon]="true" variant="primary" size="sm" (click)="nextMonth()" aria-label="Mes siguiente">
+        <i class="ph ph-caret-right text-paper"></i>
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Day-of-week labels -->
+  <div class="grid grid-cols-7 mb-1">
+    @for (label of dayLabels; track label; let i = $index) {
+      <div class="text-center text-xs text-earth py-1">{{ label }}</div>
+    }
+  </div>
+
+  <!-- Day grid -->
+  <div class="grid grid-cols-7 gap-y-1">
+    @for (cell of calendarDays(); track $index) {
+      @if (cell === null) {
+        <div></div>
+      } @else {
+        <button
+          (click)="selectDate(cell)"
+          [class]="dayClass(cell)"
+          [attr.aria-label]="cell.toLocaleDateString('es-MX')"
+          [attr.aria-pressed]="isSelected(cell)"
+        >
+          {{ cell.getDate() }}
+        </button>
+      }
+    }
+  </div>
+
+  <!-- Time picker -->
+  @if (showTime()) {
+    <div class="mt-4 pt-4 border-t border-paper/10 flex items-center justify-between">
+      <span class="section-label text-earth">{{ timeLabel() }}</span>
+      <input
+        type="time"
+        [value]="selectedTime()"
+        (change)="onTimeChange($event)"
+        class="bg-ember text-ink font-display text-xl font-medium px-5 py-2.5 rounded-2xl border-none outline-none cursor-pointer"
+        [attr.aria-label]="timeLabel()"
+      />
+    </div>
+  }
+</div>

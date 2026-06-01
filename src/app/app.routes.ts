@@ -11,6 +11,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/auth/auth.routes').then((r) => r.routes),
       },
       {
+        path: 'events/create',
+        loadComponent: () => import('./features/events/pages/create-event/create-event').then((c) => c.CreateEvent),
+      },
+      {
         path: '**',
         redirectTo: 'login',
       },
