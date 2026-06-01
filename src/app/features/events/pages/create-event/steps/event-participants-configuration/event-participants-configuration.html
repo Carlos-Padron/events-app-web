@@ -1,0 +1,39 @@
+<div class="flex-1 overflow-y-auto flex flex-col gap-8 px-0">
+
+  <!-- Participant limit -->
+  <section>
+    <h1 class="font-display text-paper font-light text-2xl text-center mb-5">
+      ¿Cuántos <span class="text-ember italic">participantes</span> tendrá el evento?
+    </h1>
+
+    <div class="flex flex-col gap-3">
+      @for (option of limitOptions; track option.value) {
+        <button [class]="limitCardClass(option.value)" (click)="selectLimit(option.value)">
+          <div class="flex items-start gap-3">
+            <div class="flex-1">
+              <p class="font-display text-paper text-base font-medium mb-1">{{ option.label }}</p>
+              <p class="text-sm text-paper/50 leading-relaxed">{{ option.description }}</p>
+            </div>
+            <div [class]="limitRadioClass(option.value)" aria-hidden="true"></div>
+          </div>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Shots per participant -->
+  <section>
+    <h2 class="font-display text-paper font-light text-xl text-center mb-5">
+      ¿Cuántas <span class="text-ember italic">fotos</span> puede tomar cada participante?
+    </h2>
+
+    <div class="flex gap-3">
+      @for (option of shotOptions; track option.value) {
+        <button [class]="shotCardClass(option.value)" (click)="selectShots(option.value)">
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </section>
+
+</div>

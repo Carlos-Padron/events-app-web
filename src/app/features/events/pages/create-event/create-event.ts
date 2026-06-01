@@ -5,6 +5,8 @@ import { EventDateStep } from './steps/event-date-step/event-date-step';
 import { EventRevealStep } from './steps/event-reveal-step/event-reveal-step';
 import { EventCoverStep } from './steps/event-cover-step/event-cover-step';
 import { EventPhotoFilterStep } from './steps/event-photo-filter-step/event-photo-filter-step';
+import { EventParticipantsConfiguration } from "./steps/event-participants-configuration/event-participants-configuration";
+import { EventSummary } from "./steps/event-summary/event-summary";
 
 @Component({
   selector: 'app-create',
@@ -17,11 +19,13 @@ import { EventPhotoFilterStep } from './steps/event-photo-filter-step/event-phot
     EventRevealStep,
     EventPhotoFilterStep,
     EventCoverStep,
-  ],
+    EventParticipantsConfiguration,
+    EventSummary
+],
   templateUrl: './create-event.html',
 })
 export class CreateEvent {
-  readonly totalSteps = 5;
+  readonly totalSteps = 7;
   readonly stepsArray = Array.from({ length: this.totalSteps }, (_, i) => i + 1);
 
   currentStep = signal(1);
