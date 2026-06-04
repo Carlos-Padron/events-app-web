@@ -28,6 +28,7 @@
         <button
           (click)="selectDate(cell)"
           [class]="dayClass(cell)"
+          [disabled]="isDisabled(cell)"
           [attr.aria-label]="cell.toLocaleDateString('es-MX')"
           [attr.aria-pressed]="isSelected(cell)"
         >

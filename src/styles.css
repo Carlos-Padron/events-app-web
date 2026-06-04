@@ -11,20 +11,20 @@
 
 @theme {
   /* Color pallet Warm Film */
-  --color-ink: #1f1b16;
-  --color-ink-soft: #2c2620;
-  --color-paper: #f5efe5;
-  --color-paper-warm: #eee5d3;
-  --color-ember: #E89B3D;
-  --color-ember-deep: #C97A1F;
-  --color-ember-ligth: #F5C97A;
-  --color-sun: #f2c063;
-  --color-crimson: #b8412e;
-  --color-crimson-light: #d4654f;
-  --color-sage: #87a878;
-  --color-sage-light: #a8c49b;
-  --color-earth: #6b5c4c;
-  --color-bone: #e5dcc9;
+  --color-ink: #0E0C0A;
+  --color-ink-soft: #1C1813;
+  --color-paper: #F7F2E8;
+  --color-paper-warm: #EDE5D5;
+  --color-ember: #C8922E;
+  --color-ember-deep: #A8740C;
+  --color-ember-ligth: #E4C068;
+  --color-sun: #DAB84A;
+  --color-crimson: #7A2535;
+  --color-crimson-light: #A03D50;
+  --color-sage: #7A8B72;
+  --color-sage-light: #96A88E;
+  --color-earth: #6B5E4A;
+  --color-bone: #E2D8C4;
 
   /* fonts */
   --font-display: 'Fraunces Variable', serif;

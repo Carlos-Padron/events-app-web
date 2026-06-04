@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Calendar } from '../../../../../../components/calendar/calendar';
+import { EventDraftService } from '../../event-draft.service';
 
 @Component({
   selector: 'app-event-date-step',
@@ -9,9 +10,6 @@ import { Calendar } from '../../../../../../components/calendar/calendar';
   templateUrl: './event-date-step.html',
 })
 export class EventDateStep {
-  selectedDate = signal<Date | null>(null);
-
-  onDateSelected(date: Date): void {
-    this.selectedDate.set(date);
-  }
+  readonly draft   = inject(EventDraftService);
+  readonly minDate = new Date();
 }

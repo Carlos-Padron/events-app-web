@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Button } from '../../../../../../components/button/button';
+import { EventDraftService } from '../../event-draft.service';
 
 @Component({
   selector: 'app-event-cover-step',
@@ -8,24 +9,18 @@ import { Button } from '../../../../../../components/button/button';
   imports: [Button],
   templateUrl: './event-cover-step.html',
 })
-export class EventCoverStep implements OnDestroy {
-  title = input<string>('Nombre del evento');
-  date  = input<string>('');
+export class EventCoverStep {
+  readonly draft = inject(EventDraftService);
 
-  coverUrl = signal<string | null>(null);
+  dateLabel = computed(() => {
+    const d = this.draft.date();
+    if (!d) return '';
+    return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+  });
 
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-
-    const prev = this.coverUrl();
-    if (prev) URL.revokeObjectURL(prev);
-
-    this.coverUrl.set(URL.createObjectURL(file));
-  }
-
-  ngOnDestroy(): void {
-    const url = this.coverUrl();
-    if (url) URL.revokeObjectURL(url);
+    this.draft.setCover(file);
   }
 }

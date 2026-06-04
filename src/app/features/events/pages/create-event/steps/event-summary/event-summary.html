@@ -1,1 +1,50 @@
-<p>event-summary works!</p>
+<div class="flex-1 relative overflow-hidden">
+
+  <!-- Background: cover photo or default gradient -->
+  @if (draft.coverPreviewUrl()) {
+    <img
+      [src]="draft.coverPreviewUrl()"
+      class="absolute inset-0 w-full h-full object-cover"
+      alt="Portada del evento"
+    />
+  } @else {
+    <div class="absolute inset-0 bg-gradient-to-br from-crimson to-ember"></div>
+  }
+
+  <!-- Bottom gradient overlay -->
+  <div class="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"></div>
+
+  <!-- Overlaid content -->
+  <div class="absolute inset-0 flex flex-col justify-end p-6 gap-3">
+
+    <p class="section-label text-ember">✦ Reel</p>
+
+    <h1 class="font-display text-4xl text-paper font-light leading-tight">
+      {{ draft.name() || 'Sin nombre' }}
+    </h1>
+
+    <p class="text-paper/60 text-sm capitalize">{{ dateLabel() }}</p>
+
+    <div class="h-px bg-paper/20"></div>
+
+    <div class="flex flex-wrap gap-2">
+      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+        {{ filterLabel() }}
+      </span>
+      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+        Hasta {{ draft.participantLimit() }} inv.
+      </span>
+      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+        {{ shotsLabel() }}
+      </span>
+      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+        {{ revealLabel() }}
+      </span>
+    </div>
+
+    <app-button variant="accent" size="lg" [fullWidth]="true" (click)="create.emit()">
+      Crear film ✦
+    </app-button>
+
+  </div>
+</div>

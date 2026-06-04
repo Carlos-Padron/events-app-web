@@ -1,44 +1,38 @@
-<div class="flex-1 overflow-y-auto flex flex-col gap-5 px-0">
+<div class="flex-1 overflow-y-auto flex flex-col gap-6">
 
-  <h1 class="font-display text-paper font-light text-2xl text-center">
-    ¿Cuándo se <span class="text-ember italic">revelan</span> las fotos?
-  </h1>
+  <!-- Title -->
+  <div class="flex flex-col gap-2 text-center">
+    <h1 class="font-display text-paper font-light text-2xl">
+      ¿Cuándo cierra <span class="text-ember italic">la cámara</span>?
+    </h1>
+    <p class="text-sm text-paper/40 leading-relaxed">
+      Los participantes fotografían desde el inicio del evento hasta este momento. Al llegar esta hora, las fotos se revelan.
+    </p>
+  </div>
 
-  <!-- Option 1: On close -->
-  <button [class]="cardClass('on-close')" (click)="select('on-close')">
-    <div class="flex items-start gap-3">
-      <div class="flex-1">
-        <p class="font-display text-paper text-base font-medium mb-1">Al cerrar el evento</p>
-        <p class="text-sm text-paper/50 leading-relaxed">Las fotos se revelan inmediatamente cuando termina el evento.</p>
+  <!-- Window indicator -->
+  @if (eventDateLabel()) {
+    <div class="flex items-center gap-2 bg-paper/5 rounded-2xl px-4 py-3 border border-paper/10">
+      <div class="flex flex-col items-center gap-0.5 flex-1 text-center">
+        <span class="text-[10px] uppercase tracking-widest text-paper/40">Apertura</span>
+        <span class="text-sm font-display text-paper font-medium capitalize">{{ eventDateLabel() }}</span>
       </div>
-      <div [class]="radioClass('on-close')"></div>
-    </div>
-  </button>
-
-  <!-- Option 2: Scheduled -->
-  <button [class]="cardClass('scheduled')" (click)="select('scheduled')">
-    <div class="flex items-start gap-3">
-      <div class="flex-1">
-        <p class="font-display text-paper text-base font-medium mb-1">A una hora específica</p>
-        <p class="text-sm text-paper/50 leading-relaxed">Programa el revelado para crear anticipación.</p>
-        @if (isScheduled() && formattedSchedule()) {
-          <div class="inline-flex items-center gap-1.5 bg-ember/20 text-ember text-xs font-display font-medium px-3 py-1.5 rounded-lg mt-2.5">
-            ✦ {{ formattedSchedule() }}
-          </div>
-        }
+      <i class="ph ph-arrow-right text-paper/30 flex-shrink-0"></i>
+      <div class="flex flex-col items-center gap-0.5 flex-1 text-center">
+        <span class="text-[10px] uppercase tracking-widest text-paper/40">Cierre</span>
+        <span class="text-sm font-display font-medium capitalize" [class]="draft.revealDate() ? 'text-ember' : 'text-paper/30'">
+          {{ revealDateLabel() ?? '—' }}
+        </span>
       </div>
-      <div [class]="radioClass('scheduled')"></div>
     </div>
-  </button>
-
-  <!-- Calendar — only when scheduled -->
-  @if (isScheduled()) {
-    <app-calendar
-      [timeLabel]="'Hora de revelado'"
-      [value]="scheduledDate()"
-      (valueChange)="scheduledDate.set($event)"
-      (timeChange)="scheduledTime.set($event)"
-    />
   }
+
+  <!-- Calendar -->
+  <app-calendar
+    [minDate]="draft.date()"
+    [timeLabel]="'Hora de cierre'"
+    [value]="draft.revealDate()"
+    (valueChange)="draft.revealDate.set($event)"
+  />
 
 </div>

@@ -1,39 +1,38 @@
-<div class="flex-1 overflow-y-auto flex flex-col gap-8 px-0">
+<div class="flex-1 flex flex-col gap-8">
+
+  <!-- Title -->
+  <h1 class="font-display text-paper font-light text-2xl leading-snug text-center">
+    ¿Cuántos invitados<br>para tu <span class="text-ember italic">film</span>?
+  </h1>
 
   <!-- Participant limit -->
-  <section>
-    <h1 class="font-display text-paper font-light text-2xl text-center mb-5">
-      ¿Cuántos <span class="text-ember italic">participantes</span> tendrá el evento?
-    </h1>
-
-    <div class="flex flex-col gap-3">
-      @for (option of limitOptions; track option.value) {
-        <button [class]="limitCardClass(option.value)" (click)="selectLimit(option.value)">
-          <div class="flex items-start gap-3">
-            <div class="flex-1">
-              <p class="font-display text-paper text-base font-medium mb-1">{{ option.label }}</p>
-              <p class="text-sm text-paper/50 leading-relaxed">{{ option.description }}</p>
-            </div>
-            <div [class]="limitRadioClass(option.value)" aria-hidden="true"></div>
-          </div>
-        </button>
-      }
+  <div>
+    <div class="flex items-center gap-3 mb-3">
+      <span class="text-xs font-display uppercase tracking-widest text-paper/40">Participantes</span>
+      <div class="flex-1 h-px bg-paper/10"></div>
     </div>
-  </section>
-
-  <!-- Shots per participant -->
-  <section>
-    <h2 class="font-display text-paper font-light text-xl text-center mb-5">
-      ¿Cuántas <span class="text-ember italic">fotos</span> puede tomar cada participante?
-    </h2>
-
-    <div class="flex gap-3">
-      @for (option of shotOptions; track option.value) {
-        <button [class]="shotCardClass(option.value)" (click)="selectShots(option.value)">
+    <div class="flex gap-2">
+      @for (option of limitOptions; track option.value) {
+        <button [class]="limitPillClass(option.value)" (click)="selectLimit(option.value)">
           {{ option.label }}
         </button>
       }
     </div>
-  </section>
+  </div>
+
+  <!-- Shots per person -->
+  <div>
+    <div class="flex items-center gap-3 mb-3">
+      <span class="text-xs font-display uppercase tracking-widest text-paper/40">Tiros por persona</span>
+      <div class="flex-1 h-px bg-paper/10"></div>
+    </div>
+    <div class="flex gap-2">
+      @for (option of shotOptions; track option.value) {
+        <button [class]="shotPillClass(option.value)" (click)="selectShots(option.value)">
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
 
 </div>
