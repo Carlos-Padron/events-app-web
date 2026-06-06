@@ -6,11 +6,12 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { Divider } from '../../../../components/divider/divider';
+import { AuthService } from '../../../../common/services/auth.service';
 
 function matchPasswords(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
@@ -27,13 +28,15 @@ function matchPasswords(control: AbstractControl): ValidationErrors | null {
 })
 export class Register {
   private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   form = this.fb.group(
     {
       name: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      // lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required]],
       confirmPassword: ['', Validators.required],
     },
     { validators: matchPasswords },
@@ -49,13 +52,13 @@ export class Register {
     return '';
   }
 
-  get lastNameError(): string {
-    const ctrl = this.form.get('lastName');
-    if (!ctrl?.touched) return '';
-    if (ctrl.hasError('required')) return 'El apellido es requerido.';
-    if (ctrl.hasError('minlength')) return 'Mínimo 2 caracteres.';
-    return '';
-  }
+  // get lastNameError(): string {
+  //   const ctrl = this.form.get('lastName');
+  //   if (!ctrl?.touched) return '';
+  //   if (ctrl.hasError('required')) return 'El apellido es requerido.';
+  //   if (ctrl.hasError('minlength')) return 'Mínimo 2 caracteres.';
+  //   return '';
+  // }
 
   get emailError(): string {
     const ctrl = this.form.get('email');
@@ -69,7 +72,6 @@ export class Register {
     const ctrl = this.form.get('password');
     if (!ctrl?.touched) return '';
     if (ctrl.hasError('required')) return 'La contraseña es requerida.';
-    if (ctrl.hasError('minlength')) return 'Mínimo 8 caracteres.';
     return '';
   }
 
@@ -81,14 +83,24 @@ export class Register {
     return '';
   }
 
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+
+    const { name, email, password } = this.form.value;
+
     this.isLoading.set(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    this.isLoading.set(false);
-    console.log(this.form.value);
+    this.auth.register({ name: name!, email: email!, password: password! }).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/eventos']);
+      },
+      error: (e) => {
+        this.isLoading.set(false);
+        alert(`error: ${JSON.stringify(e)}`);
+      },
+    });
   }
 }

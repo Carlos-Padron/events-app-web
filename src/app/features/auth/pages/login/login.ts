@@ -5,6 +5,7 @@ import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { Divider } from '../../../../components/divider/divider';
+import { AuthService } from '../../../../common/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,12 +15,13 @@ import { Divider } from '../../../../components/divider/divider';
   templateUrl: './login.html',
 })
 export class Login {
-  private fb     = inject(FormBuilder);
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
   private router = inject(Router);
 
   form = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]],
   });
 
   isLoading = signal(false);
@@ -28,26 +30,32 @@ export class Login {
     const ctrl = this.form.get('email');
     if (!ctrl?.touched) return '';
     if (ctrl.hasError('required')) return 'El correo es requerido.';
-    if (ctrl.hasError('email'))    return 'Ingresa un correo válido.';
+    if (ctrl.hasError('email')) return 'Ingresa un correo válido.';
     return '';
   }
 
   get passwordError(): string {
     const ctrl = this.form.get('password');
     if (!ctrl?.touched) return '';
-    if (ctrl.hasError('required'))  return 'La contraseña es requerida.';
-    if (ctrl.hasError('minlength')) return 'Mínimo 8 caracteres.';
+    if (ctrl.hasError('required')) return 'La contraseña es requerida.';
     return '';
   }
 
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+
+    const { email, password } = this.form.value;
+
     this.isLoading.set(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    this.isLoading.set(false);
-    this.router.navigate(['/eventos']);
+    this.auth.login({ email: email!, password: password! }).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/eventos']);
+      },
+      error: () => this.isLoading.set(false),
+    });
   }
 }
