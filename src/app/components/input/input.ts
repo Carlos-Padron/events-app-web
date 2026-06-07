@@ -23,7 +23,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         [class]="inputClasses()"
       />
       @if (error()) {
-        <span class="text-xs text-crimson mt-2 block">{{ error() }}</span>
+        <span class="text-xs text-crimson mt-2 block whitespace-pre-line">{{ error() }}</span>
       } @else if (hint()) {
         <span class="text-xs text-earth/60 mt-2 block">{{ hint() }}</span>
       }

@@ -7,11 +7,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { Input } from '../../../../components/input/input';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { Divider } from '../../../../components/divider/divider';
 import { AuthService } from '../../../../common/services/auth.service';
+import { catchFormError } from '../../../../common/utils/catch-form-error';
 
 function matchPasswords(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
@@ -30,6 +32,7 @@ export class Register {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private toastr = inject(ToastrService);
 
   form = this.fb.group(
     {
@@ -49,6 +52,7 @@ export class Register {
     if (!ctrl?.touched) return '';
     if (ctrl.hasError('required')) return 'El nombre es requerido.';
     if (ctrl.hasError('minlength')) return 'Mínimo 2 caracteres.';
+    if (ctrl.hasError('backend')) return ctrl.getError('backend');
     return '';
   }
 
@@ -65,6 +69,7 @@ export class Register {
     if (!ctrl?.touched) return '';
     if (ctrl.hasError('required')) return 'El correo es requerido.';
     if (ctrl.hasError('email')) return 'Ingresa un correo válido.';
+    if (ctrl.hasError('backend')) return ctrl.getError('backend');
     return '';
   }
 
@@ -72,6 +77,7 @@ export class Register {
     const ctrl = this.form.get('password');
     if (!ctrl?.touched) return '';
     if (ctrl.hasError('required')) return 'La contraseña es requerida.';
+    if (ctrl.hasError('backend')) return ctrl.getError('backend');
     return '';
   }
 
@@ -92,15 +98,16 @@ export class Register {
     const { name, email, password } = this.form.value;
 
     this.isLoading.set(true);
-    this.auth.register({ name: name!, email: email!, password: password! }).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.router.navigate(['/eventos']);
-      },
-      error: (e) => {
-        this.isLoading.set(false);
-        alert(`error: ${JSON.stringify(e)}`);
-      },
-    });
+    this.auth
+      .register({ name: name!, email: email!, password: password! })
+      .pipe(catchFormError(this.form, this.toastr))
+      .subscribe({
+        next: () => {
+          this.toastr.success('¡Cuenta creada exitosamente!');
+          this.isLoading.set(false);
+          this.router.navigate(['/eventos']);
+        },
+        error: () => this.isLoading.set(false),
+      });
   }
 }
