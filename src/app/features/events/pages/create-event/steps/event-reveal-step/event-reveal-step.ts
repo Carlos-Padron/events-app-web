@@ -12,8 +12,8 @@ import { EventDraftService } from '../../event-draft.service';
 export class EventRevealStep {
   readonly draft = inject(EventDraftService);
 
-  eventDateLabel = computed(() => this.formatDate(this.draft.date()));
-  revealDateLabel = computed(() => this.formatDate(this.draft.revealDate()));
+  eventDateLabel  = computed(() => this.formatDate(this.draft.data().date));
+  revealDateLabel = computed(() => this.formatDate(this.draft.data().revealDate));
 
   private formatDate(d: Date | null): string | null {
     if (!d) return null;

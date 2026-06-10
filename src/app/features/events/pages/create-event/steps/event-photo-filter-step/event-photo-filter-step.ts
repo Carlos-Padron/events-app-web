@@ -25,22 +25,22 @@ export class EventPhotoFilterStep {
   ];
 
   previewFilter = computed(() =>
-    this.filters.find(f => f.id === this.draft.filter())?.cssFilter ?? 'none'
+    this.filters.find(f => f.id === this.draft.data().filter)?.cssFilter ?? 'none'
   );
 
   select(id: PhotoFilter): void {
-    this.draft.filter.set(id);
+    this.draft.patch({ filter: id });
   }
 
   optionClass(id: PhotoFilter): string {
     const base = 'flex flex-col items-center gap-2 rounded-2xl p-2 border-2 transition-colors cursor-pointer';
-    return this.draft.filter() === id
+    return this.draft.data().filter === id
       ? `${base} border-ember`
       : `${base} border-transparent`;
   }
 
   labelClass(id: PhotoFilter): string {
-    return this.draft.filter() === id
+    return this.draft.data().filter === id
       ? 'text-xs font-semibold text-ember'
       : 'text-xs font-medium text-earth';
   }

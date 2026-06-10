@@ -9,8 +9,8 @@
 
   <app-calendar
     [minDate]="minDate"
-    [value]="draft.date()"
-    (valueChange)="draft.date.set($event)"
+    [value]="draft.data().date"
+    (valueChange)="draft.patch({ date: $event })"
   />
 
 </div>

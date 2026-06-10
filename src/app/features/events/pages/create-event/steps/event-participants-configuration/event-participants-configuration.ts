@@ -39,23 +39,23 @@ export class EventParticipantsConfiguration {
   ];
 
   selectLimit(value: ParticipantLimit): void {
-    this.draft.participantLimit.set(value);
+    this.draft.patch({ participantLimit: value });
   }
 
   selectShots(value: number | null): void {
-    this.draft.shotsPerParticipant.set(value);
+    this.draft.patch({ shotsPerParticipant: value });
   }
 
   limitPillClass(value: ParticipantLimit): string {
     const base = 'flex-1 py-2 rounded-xl text-sm font-display font-medium border transition-colors cursor-pointer';
-    return this.draft.participantLimit() === value
+    return this.draft.data().participantLimit === value
       ? `${base} bg-ember border-ember text-ink`
       : `${base} bg-paper/5 border-paper/10 text-paper/50`;
   }
 
   shotPillClass(value: number | null): string {
     const base = 'flex-1 py-2.5 rounded-xl text-sm font-display font-medium border transition-colors cursor-pointer';
-    return this.draft.shotsPerParticipant() === value
+    return this.draft.data().shotsPerParticipant === value
       ? `${base} bg-ember border-ember text-ink`
       : `${base} bg-paper/5 border-paper/10 text-paper/50`;
   }

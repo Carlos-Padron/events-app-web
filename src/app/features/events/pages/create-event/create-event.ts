@@ -38,17 +38,17 @@ export class CreateEvent {
   canProceed = computed(() => {
     switch (this.currentStep()) {
       case 1:
-        return this.draft.name().trim().length > 0;
+        return this.draft.data().name.trim().length > 0;
 
       case 2: {
-        const date = this.draft.date();
+        const date = this.draft.data().date;
         return date !== null && date > new Date();
       }
 
       case 3: {
-        const reveal = this.draft.revealDate();
+        const reveal = this.draft.data().revealDate;
         if (!reveal) return false;
-        const event = this.draft.date();
+        const event = this.draft.data().date;
         return !event || reveal > event;
       }
 

@@ -14,11 +14,11 @@ import { EventDraftService } from '../../event-draft.service';
 export class EventNameStep {
   private readonly draft = inject(EventDraftService);
 
-  readonly nameControl = new FormControl(this.draft.name(), { nonNullable: true });
+  readonly nameControl = new FormControl(this.draft.data().name, { nonNullable: true });
 
   constructor() {
     this.nameControl.valueChanges
       .pipe(takeUntilDestroyed())
-      .subscribe(v => this.draft.name.set(v));
+      .subscribe(v => this.draft.patch({ name: v }));
   }
 }

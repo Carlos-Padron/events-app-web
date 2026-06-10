@@ -13,7 +13,7 @@ export class EventCoverStep {
   readonly draft = inject(EventDraftService);
 
   dateLabel = computed(() => {
-    const d = this.draft.date();
+    const d = this.draft.data().date;
     if (!d) return '';
     return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
   });

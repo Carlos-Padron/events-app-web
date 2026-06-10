@@ -14,11 +14,11 @@ export class EventSummary {
   readonly create = output<void>();
 
   filterLabel = computed(() =>
-    ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[this.draft.filter()]
+    ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[this.draft.data().filter]
   );
 
   revealLabel = computed(() => {
-    const d = this.draft.revealDate();
+    const d = this.draft.data().revealDate;
     if (!d) return 'Sin fecha';
     const label = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
     const h = String(d.getHours()).padStart(2, '0');
@@ -27,14 +27,13 @@ export class EventSummary {
   });
 
   dateLabel = computed(() => {
-    const d = this.draft.date();
+    const d = this.draft.data().date;
     if (!d) return 'Sin fecha';
     return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   });
 
-  shotsLabel = computed(() =>
-    this.draft.shotsPerParticipant() === null
-      ? 'Ilimitadas'
-      : `${this.draft.shotsPerParticipant()} por persona`
-  );
+  shotsLabel = computed(() => {
+    const shots = this.draft.data().shotsPerParticipant;
+    return shots === null ? 'Ilimitadas' : `${shots} por persona`;
+  });
 }

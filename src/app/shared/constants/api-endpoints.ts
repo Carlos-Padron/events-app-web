@@ -4,6 +4,9 @@ export const API_ENDPOINTS = {
     register: '/auth/register',
     refresh:  '/auth/refresh',
   },
+  events: {
+    create: '/events',
+  },
 } as const;
 
 // Endpoints that should never trigger the 401 refresh & retry flow.

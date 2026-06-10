@@ -20,7 +20,7 @@
     <div class="absolute inset-x-0 bottom-0 p-6">
       <p class="section-label text-ember mb-3">✦ Reel</p>
       <h2 class="font-display text-4xl text-paper font-light leading-tight">
-        {{ draft.name() || 'Nombre del evento' }}
+        {{ draft.data().name || 'Nombre del evento' }}
       </h2>
       @if (dateLabel()) {
         <p class="text-paper/60 text-sm mt-2 capitalize">{{ dateLabel() }}</p>

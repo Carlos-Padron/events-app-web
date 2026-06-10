@@ -20,7 +20,7 @@
       <i class="ph ph-arrow-right text-paper/30 flex-shrink-0"></i>
       <div class="flex flex-col items-center gap-0.5 flex-1 text-center">
         <span class="text-[10px] uppercase tracking-widest text-paper/40">Cierre</span>
-        <span class="text-sm font-display font-medium capitalize" [class]="draft.revealDate() ? 'text-ember' : 'text-paper/30'">
+        <span class="text-sm font-display font-medium capitalize" [class]="draft.data().revealDate ? 'text-ember' : 'text-paper/30'">
           {{ revealDateLabel() ?? '—' }}
         </span>
       </div>
@@ -29,10 +29,10 @@
 
   <!-- Calendar -->
   <app-calendar
-    [minDate]="draft.date()"
+    [minDate]="draft.data().date"
     [timeLabel]="'Hora de cierre'"
-    [value]="draft.revealDate()"
-    (valueChange)="draft.revealDate.set($event)"
+    [value]="draft.data().revealDate"
+    (valueChange)="draft.patch({ revealDate: $event })"
   />
 
 </div>
