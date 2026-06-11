@@ -2,7 +2,12 @@
 
   <!-- Summary: full-screen card with overlaid controls -->
   <div class="flex-1 relative flex flex-col bg-ink">
-    <app-event-summary (create)="next()" />
+    <app-event-summary
+      (create)="submit()"
+      (retryUpload)="retryUpload()"
+      [isLoading]="submitting()"
+      [errorType]="submitErrorType()"
+    />
 
     <div class="absolute top-10 left-4 z-10">
       <app-button [icon]="true" variant="primary" (click)="back()">

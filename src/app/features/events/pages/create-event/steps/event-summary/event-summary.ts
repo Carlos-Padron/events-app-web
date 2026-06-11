@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Button } from '../../../../../../components/button/button';
 import { EventDraftService } from '../../event-draft.service';
 
@@ -10,8 +10,11 @@ import { EventDraftService } from '../../event-draft.service';
   templateUrl: './event-summary.html',
 })
 export class EventSummary {
-  readonly draft = inject(EventDraftService);
-  readonly create = output<void>();
+  readonly draft       = inject(EventDraftService);
+  readonly create      = output<void>();
+  readonly retryUpload = output<void>();
+  readonly isLoading   = input(false);
+  readonly errorType   = input<'event' | 'cover' | null>(null);
 
   filterLabel = computed(() =>
     ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[this.draft.data().filter]

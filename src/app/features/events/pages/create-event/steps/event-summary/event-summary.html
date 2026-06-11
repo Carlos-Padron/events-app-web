@@ -42,9 +42,32 @@
       </span>
     </div>
 
-    <app-button variant="accent" size="lg" [fullWidth]="true" (click)="create.emit()">
-      Crear film ✦
-    </app-button>
+    <!-- Error messages -->
+    @if (errorType() === 'event') {
+      <p class="text-red-400 text-sm text-center">
+        No se pudo crear el evento. Intenta de nuevo.
+      </p>
+    }
+
+    @if (errorType() === 'cover') {
+      <p class="text-amber-400 text-sm text-center">
+        El evento fue creado, pero no se pudo subir la portada.
+      </p>
+    }
+
+    <!-- Primary action -->
+    @if (errorType() === 'cover') {
+      <!-- Event already exists — only retry the upload -->
+      <app-button variant="primary" size="lg" [fullWidth]="true"
+        [disabled]="isLoading()" (click)="retryUpload.emit()">
+        {{ isLoading() ? 'Reintentando...' : 'Reintentar subida' }}
+      </app-button>
+    } @else {
+      <app-button variant="accent" size="lg" [fullWidth]="true"
+        [disabled]="isLoading()" (click)="create.emit()">
+        {{ isLoading() ? 'Creando...' : 'Crear film ✦' }}
+      </app-button>
+    }
 
   </div>
 </div>

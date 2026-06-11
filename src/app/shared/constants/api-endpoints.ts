@@ -5,7 +5,10 @@ export const API_ENDPOINTS = {
     refresh:  '/auth/refresh',
   },
   events: {
-    create: '/events',
+    create:         '/event',
+    coverUploadUrl: (id: string) => `/event/${id}/cover-upload-url`,
+    patchCover:     (id: string) => `/event/${id}/cover`,
+    get:            (id: string) => `/event/${id}`,
   },
 } as const;
 
