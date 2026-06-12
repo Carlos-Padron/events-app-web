@@ -1,0 +1,96 @@
+@if (loading()) {
+  <div class="flex-1 flex items-center justify-center bg-ink">
+    <app-spinner size="md" />
+  </div>
+} @else if (event()) {
+  <div class="flex-1 overflow-y-auto flex flex-col">
+
+    <!-- Hero section -->
+    <div class="relative px-6 pt-10 pb-14">
+
+      <!-- Background: cover photo or default gradient -->
+      @if (coverUrl()) {
+        <img [src]="coverUrl()" class="absolute inset-0 w-full h-full object-cover" alt="" aria-hidden="true" />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-ink"></div>
+      } @else {
+        <div class="absolute inset-0 bg-gradient-to-b from-crimson to-ember"></div>
+        <div class="absolute inset-x-0 bottom-0 h-10 bg-linear-to-b from-transparent to-ink pointer-events-none"></div>
+      }
+
+      <p class="relative text-xs font-display uppercase tracking-widest text-paper/50 mb-8" aria-hidden="true">✦ Reel</p>
+
+      <div class="relative w-10 h-10 rounded-full bg-paper/20 flex items-center justify-center mb-4" aria-hidden="true">
+        <i class="ph ph-check-bold text-paper text-lg"></i>
+      </div>
+
+      <p class="relative text-paper/60 text-sm mb-1">Film creado</p>
+      <h1 class="relative font-display text-4xl font-light text-paper leading-tight mb-6">
+        {{ event()!.name }}
+      </h1>
+
+      <div class="relative flex flex-wrap gap-2" aria-label="Detalles del evento">
+        <span class="text-xs bg-paper/10 text-paper/80 px-3 py-1.5 rounded-full border border-paper/15">
+          {{ startsLabel() }} → {{ endsLabel() }}
+        </span>
+        <span class="text-xs bg-paper/10 text-paper/80 px-3 py-1.5 rounded-full border border-paper/15">
+          {{ filterLabel() }}
+        </span>
+        @if (event()!.maxParticipants !== null) {
+          <span class="text-xs bg-paper/10 text-paper/80 px-3 py-1.5 rounded-full border border-paper/15">
+            Hasta {{ event()!.maxParticipants }} inv.
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Share section -->
+    <div class="flex-1 bg-ink px-6 pt-6 pb-10 flex flex-col gap-6">
+
+      <div class="text-center">
+        <p class="text-xs font-display uppercase tracking-widest text-ember mb-1">Comparte</p>
+        <p class="text-earth text-sm">Muestra este código a tus invitados</p>
+      </div>
+
+      <!-- QR code -->
+      <div class="flex justify-center" role="img" [attr.aria-label]="'Código QR de invitación para ' + event()!.name">
+        <div class="bg-paper rounded-2xl p-5 shadow-xl">
+          <qrcode
+            [qrdata]="joinUrl()"
+            [width]="200"
+            [margin]="1"
+            colorDark="#0E0C0A"
+            colorLight="#F7F2E8"
+            elementType="img"
+            ariaLabel="Código QR para unirse al evento"
+            cssClass="block"
+          />
+        </div>
+      </div>
+
+      <!-- URL display -->
+      <div class="bg-ink-soft rounded-xl p-4 flex flex-col gap-2">
+        <p class="text-xs text-earth uppercase tracking-wider">Enlace de invitación</p>
+        <p class="text-paper/60 text-xs font-mono truncate" [title]="joinUrl()">{{ joinUrl() }}</p>
+      </div>
+
+      <!-- Actions -->
+      <app-button variant="accent" size="lg" [fullWidth]="true" (click)="copyLink()"
+        [attr.aria-label]="copied() ? 'Enlace copiado al portapapeles' : 'Copiar enlace de invitación'">
+        <i class="ph" [class]="copied() ? 'ph-check' : 'ph-copy'"></i>
+        {{ copied() ? 'Copiado' : 'Copiar enlace' }}
+      </app-button>
+
+      <app-button variant="secondary" size="md" [fullWidth]="true" routerLink="/eventos">
+        Ir a mis eventos
+      </app-button>
+
+    </div>
+  </div>
+} @else {
+  <div class="flex-1 flex flex-col items-center justify-center text-center bg-ink px-6 gap-4">
+    <p class="text-earth text-sm">No se pudo cargar el evento.</p>
+    <app-button variant="secondary" size="md" routerLink="/eventos">
+      Ir a mis eventos
+    </app-button>
+  </div>
+}

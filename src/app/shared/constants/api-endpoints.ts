@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   },
   events: {
     create:         '/event',
+    mine:           '/event/mine',
     coverUploadUrl: (id: string) => `/event/${id}/cover-upload-url`,
     patchCover:     (id: string) => `/event/${id}/cover`,
     get:            (id: string) => `/event/${id}`,

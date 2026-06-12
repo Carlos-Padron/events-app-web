@@ -1,0 +1,134 @@
+<div class="flex-1 overflow-y-auto flex flex-col bg-ink">
+
+  <!-- Hero -->
+  <div [class]="heroClass()">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+    <button
+      class="absolute top-10 left-4 w-9 h-9 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-paper transition-opacity hover:opacity-80"
+      (click)="goBack()"
+      aria-label="Volver">
+      <i class="ph ph-arrow-left text-lg"></i>
+    </button>
+
+    <div class="absolute inset-x-0 bottom-0 p-6">
+      @if (loading()) {
+        <div class="h-3 w-20 bg-paper/20 rounded mb-3 animate-pulse"></div>
+        <div class="h-8 w-48 bg-paper/20 rounded animate-pulse"></div>
+      } @else if (event()) {
+        <p class="text-xs font-display uppercase tracking-widest text-paper/50 mb-2" aria-hidden="true">✦ Reel</p>
+        <h1 class="font-display text-3xl font-light text-paper leading-tight">{{ event()!.name }}</h1>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+
+    <div class="flex-1 flex items-center justify-center">
+      <app-spinner size="md" />
+    </div>
+
+  } @else if (event()) {
+
+    <!-- Stats bar -->
+    <div class="flex border-b border-paper/10" role="group" aria-label="Estadísticas del evento">
+      <div class="flex-1 flex flex-col items-center py-4 gap-0.5">
+        <span class="font-display text-2xl font-light text-paper">{{ event()!.captureCount }}</span>
+        <span class="text-[10px] text-earth uppercase tracking-wider">Momentos</span>
+      </div>
+      <div class="w-px bg-paper/10" aria-hidden="true"></div>
+      <div class="flex-1 flex flex-col items-center py-4 gap-0.5">
+        <span class="font-display text-xl font-light text-ember">{{ statusLabel() }}</span>
+        <span class="text-[10px] text-earth uppercase tracking-wider">Estado</span>
+      </div>
+      <div class="w-px bg-paper/10" aria-hidden="true"></div>
+      <div class="flex-1 flex flex-col items-center py-4 gap-0.5">
+        <span class="font-display text-2xl font-light text-paper">{{ event()!.participantCount }}</span>
+        <span class="text-[10px] text-earth uppercase tracking-wider">Invitados</span>
+      </div>
+    </div>
+
+    <!-- Invite bar -->
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-paper/10">
+      <button
+        class="flex-1 min-w-0 flex items-center gap-3 bg-ink-soft rounded-xl px-4 py-3 text-left"
+        (click)="copyLink()"
+        [attr.aria-label]="copied() ? 'Enlace copiado' : 'Copiar enlace de invitación'">
+        <i class="ph flex-shrink-0 text-ember" [class]="copied() ? 'ph-check' : 'ph-link'"></i>
+        <span class="text-paper/50 text-xs font-mono truncate flex-1">{{ joinUrl() }}</span>
+        <span class="text-xs text-ember font-semibold flex-shrink-0">{{ copied() ? 'Copiado' : 'Copiar' }}</span>
+      </button>
+      <button
+        class="w-11 h-11 flex-shrink-0 bg-ink-soft rounded-xl flex items-center justify-center transition-colors"
+        [class]="showQr() ? 'text-ember' : 'text-paper/50'"
+        (click)="showQr.set(!showQr())"
+        [attr.aria-expanded]="showQr()"
+        aria-label="Ver código QR">
+        <i class="ph ph-qr-code text-lg"></i>
+      </button>
+      <button
+        class="w-11 h-11 flex-shrink-0 bg-ink-soft rounded-xl flex items-center justify-center text-paper/50 transition-colors hover:text-paper"
+        (click)="share()"
+        aria-label="Compartir enlace">
+        <i class="ph ph-export text-lg"></i>
+      </button>
+    </div>
+
+    <!-- QR panel -->
+    @if (showQr()) {
+      <div class="flex flex-col items-center py-6 px-6 gap-3 border-b border-paper/10 bg-ink-soft/30">
+        <div class="bg-paper rounded-2xl p-4 shadow-lg">
+          <qrcode
+            [qrdata]="joinUrl()"
+            [width]="180"
+            [margin]="1"
+            colorDark="#0E0C0A"
+            colorLight="#F7F2E8"
+            elementType="img"
+            ariaLabel="Código QR para unirse al evento"
+            cssClass="block"
+          />
+        </div>
+        <p class="text-xs text-earth text-center">Muestra este código a tus invitados</p>
+      </div>
+    }
+
+    <!-- Details -->
+    <div class="px-6 py-6 flex flex-col gap-4">
+      <p class="text-xs font-display uppercase tracking-widest text-ember" aria-hidden="true">✦ Detalles del film</p>
+
+      <div class="flex flex-col gap-0">
+        <div class="flex items-center justify-between py-3">
+          <span class="text-earth text-sm">Fechas</span>
+          <span class="text-paper text-sm">{{ startsLabel() }} → {{ revealLabel() }}</span>
+        </div>
+        <div class="h-px bg-paper/8"></div>
+        <div class="flex items-center justify-between py-3">
+          <span class="text-earth text-sm">Filtro</span>
+          <span class="text-paper text-sm">{{ filterLabel() }}</span>
+        </div>
+        @if (event()!.maxParticipants !== null) {
+          <div class="h-px bg-paper/8"></div>
+          <div class="flex items-center justify-between py-3">
+            <span class="text-earth text-sm">Invitados máx.</span>
+            <span class="text-paper text-sm">{{ event()!.maxParticipants }}</span>
+          </div>
+        }
+        @if (event()!.maxShotsPerParticipant !== null && event()!.maxShotsPerParticipant !== -1) {
+          <div class="h-px bg-paper/8"></div>
+          <div class="flex items-center justify-between py-3">
+            <span class="text-earth text-sm">Fotos por persona</span>
+            <span class="text-paper text-sm">{{ event()!.maxShotsPerParticipant }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  } @else {
+
+    <div class="flex-1 flex items-center justify-center px-6 text-center">
+      <p class="text-earth text-sm">No se pudo cargar el evento.</p>
+    </div>
+
+  }
+</div>

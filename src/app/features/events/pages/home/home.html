@@ -13,7 +13,24 @@
     </app-button>
   </div>
 
-  @if (events().length === 0) {
+  @if (loading()) {
+
+    <!-- Loading -->
+    <div class="flex-1 flex items-center justify-center">
+      <app-spinner size="md" />
+    </div>
+
+  } @else if (error()) {
+
+    <!-- Error -->
+    <div class="flex-1 flex flex-col items-center justify-center text-center gap-4">
+      <p class="text-earth text-sm">No se pudieron cargar tus films.</p>
+      <app-button variant="secondary" size="sm" (click)="load()">
+        Reintentar
+      </app-button>
+    </div>
+
+  } @else if (events().length === 0) {
 
     <!-- Empty state -->
     <div class="flex-1 flex flex-col items-center justify-center text-center gap-6">
@@ -37,7 +54,7 @@
 
     <div class="flex flex-col gap-6">
 
-      <!-- Live events -->
+      <!-- Live / upcoming events -->
       @if (hasLive()) {
         <div>
           <div class="flex items-center gap-3 mb-3">
@@ -46,18 +63,21 @@
           </div>
           <div class="flex flex-col gap-3">
             @for (event of liveEvents(); track event.id) {
-              <div [class]="cardClass(event)" class="aspect-4/3">
+              <a [routerLink]="['/eventos', event.id]" [state]="{ gradient: event.gradient }"
+                 [class]="cardClass(event)" class="aspect-4/3 block"
+                 [attr.aria-label]="'Ver detalles de ' + event.title">
                 <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
                 <div class="absolute inset-x-0 top-4 px-4">
                   <span class="inline-flex items-center gap-1.5 text-[9px] tracking-widest uppercase font-semibold text-sun">
-                    <span class="w-1.5 h-1.5 bg-sun rounded-full animate-pulse-dot"></span> En vivo
+                    <span class="w-1.5 h-1.5 bg-sun rounded-full animate-pulse-dot"></span>
+                    {{ statusLabel[event.status] }}
                   </span>
                 </div>
                 <div class="absolute inset-x-0 bottom-0 p-5">
                   <h2 class="font-display text-3xl text-paper font-light leading-tight mb-1">{{ event.title }}</h2>
                   <p class="text-paper/50 text-xs">{{ event.details }}</p>
                 </div>
-              </div>
+              </a>
             }
           </div>
         </div>
@@ -72,7 +92,9 @@
           </div>
           <div class="flex flex-col gap-3">
             @for (event of pastEvents(); track event.id) {
-              <div [class]="cardClass(event)" class="aspect-video">
+              <a [routerLink]="['/eventos', event.id]" [state]="{ gradient: event.gradient }"
+                 [class]="cardClass(event)" class="aspect-video block"
+                 [attr.aria-label]="'Ver detalles de ' + event.title">
                 <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent"></div>
                 <div class="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between">
                   <div>
@@ -80,11 +102,11 @@
                     <p class="text-paper/50 text-xs mt-0.5">{{ event.details }}</p>
                   </div>
                   <span class="text-[9px] tracking-widest uppercase font-semibold"
-                    [class]="event.status === 'revealed' ? 'text-ember' : 'text-earth/60'">
+                    [class]="event.status === 'closed' ? 'text-ember' : 'text-earth/60'">
                     {{ statusLabel[event.status] }}
                   </span>
                 </div>
-              </div>
+              </a>
             }
           </div>
         </div>

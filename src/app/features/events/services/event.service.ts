@@ -8,6 +8,7 @@ import {
   CoverUploadUrlResponse,
   CreateEventDto,
   EventResponse,
+  PaginatedResponse,
 } from '../../../shared/interfaces/event.interface';
 
 // Shorthand so we don't repeat environment.API_ENDPOINT throughout the file.
@@ -51,6 +52,17 @@ export class EventService {
           map(() => event),
         );
       }),
+    );
+  }
+
+  getEvent(id: string): Observable<EventResponse> {
+    return this.http.get<EventResponse>(`${API}${API_ENDPOINTS.events.get(id)}`);
+  }
+
+  getMyEvents(page = 1, limit = 50): Observable<PaginatedResponse<EventResponse>> {
+    const params = { page: String(page), limit: String(limit) };
+    return this.http.get<PaginatedResponse<EventResponse>>(
+      `${API}${API_ENDPOINTS.events.mine}`, { params }
     );
   }
 

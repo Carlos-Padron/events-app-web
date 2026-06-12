@@ -84,7 +84,9 @@ export class CreateEvent {
     this.submitErrorType.set(null);
 
     this.eventService.create(this.draft.data()).subscribe({
-      next:  () => this.router.navigate(['/eventos']),
+      next:  (event) => this.router.navigate(['/eventos', event.id, 'listo'], {
+        state: { event, coverFile: this.draft.data().coverFile ?? undefined },
+      }),
       error: () => {
         this.submitting.set(false);
         // If pendingCoverUpload is set the event was created — only the cover failed.
@@ -101,8 +103,9 @@ export class CreateEvent {
     this.submitting.set(true);
     this.submitErrorType.set(null);
 
+    const pendingId = this.eventService.pendingCoverUpload()?.eventId;
     this.eventService.retryCoverUpload().subscribe({
-      next:  () => this.router.navigate(['/eventos']),
+      next:  () => this.router.navigate(['/eventos', pendingId, 'listo']),
       error: () => {
         this.submitting.set(false);
         this.submitErrorType.set('cover');

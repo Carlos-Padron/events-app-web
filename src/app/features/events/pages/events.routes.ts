@@ -9,4 +9,12 @@ export const routes: Routes = [
     path: 'crear',
     loadComponent: () => import('./create-event/create-event').then((c) => c.CreateEvent),
   },
+  {
+    path: ':id/listo',
+    loadComponent: () => import('./event-ready/event-ready').then((c) => c.EventReady),
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./event-detail/event-detail').then((c) => c.EventDetail),
+  },
 ];
