@@ -83,6 +83,34 @@
         </div>
       }
 
+      <!-- Scheduled / upcoming events -->
+      @if (scheduledEvents().length > 0) {
+        <div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-xs font-display uppercase tracking-widest text-paper/40">Próximos</span>
+            <div class="flex-1 h-px bg-paper/10"></div>
+          </div>
+          <div class="flex flex-col gap-3">
+            @for (event of scheduledEvents(); track event.id) {
+              <a [routerLink]="['/eventos', event.id]" [state]="{ gradient: event.gradient }"
+                 [class]="cardClass(event)" class="aspect-video block"
+                 [attr.aria-label]="'Ver detalles de ' + event.title">
+                <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
+                <div class="absolute inset-x-0 top-4 px-4">
+                  <span class="inline-flex items-center gap-1.5 text-[9px] tracking-widest uppercase font-semibold text-paper/60">
+                    <i class="ph ph-clock text-xs"></i> Programado
+                  </span>
+                </div>
+                <div class="absolute inset-x-0 bottom-0 p-4">
+                  <h2 class="font-display text-2xl text-paper font-light leading-tight mb-0.5">{{ event.title }}</h2>
+                  <p class="text-paper/50 text-xs">{{ event.details }}</p>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Past events -->
       @if (pastEvents().length > 0) {
         <div>

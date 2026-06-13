@@ -1,7 +1,7 @@
 export type PhotoFilter    = 'normal' | 'vintage' | 'bw';
 export type ParticipantLimit = 5 | 10 | 25 | 50 | 100;
 export type CoverStatus    = 'none' | 'pending' | 'processing' | 'done' | 'failed';
-export type EventStatus    = 'scheduled' | 'active' | 'closed' | 'archived' | 'deleted';
+export type EventStatus    = 'scheduled' | 'live' | 'closed' | 'archived' | 'deleted';
 
 export interface CreateEventDto {
   name:                    string;

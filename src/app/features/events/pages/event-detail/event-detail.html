@@ -38,14 +38,26 @@
       </div>
       <div class="w-px bg-paper/10" aria-hidden="true"></div>
       <div class="flex-1 flex flex-col items-center py-4 gap-0.5">
-        <span class="font-display text-xl font-light text-ember">{{ statusLabel() }}</span>
-        <span class="text-[10px] text-earth uppercase tracking-wider">Estado</span>
+        <span class="font-display text-base font-light text-paper leading-snug text-center">
+          {{ startsShort() }}<br>{{ revealShort() }}
+        </span>
+        <span class="text-[10px] text-earth uppercase tracking-wider">Fechas</span>
       </div>
       <div class="w-px bg-paper/10" aria-hidden="true"></div>
       <div class="flex-1 flex flex-col items-center py-4 gap-0.5">
         <span class="font-display text-2xl font-light text-paper">{{ event()!.participantCount }}</span>
         <span class="text-[10px] text-earth uppercase tracking-wider">Invitados</span>
       </div>
+    </div>
+
+    <!-- Camera action -->
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-paper/10">
+      <button
+        class="flex-1 flex items-center justify-center gap-3 bg-ember text-ink font-semibold rounded-2xl py-4 transition-opacity active:opacity-80"
+        aria-label="Capturar momento">
+        <i class="ph ph-camera text-2xl"></i>
+        <span class="text-sm">Capturar</span>
+      </button>
     </div>
 
     <!-- Invite bar -->
@@ -93,36 +105,29 @@
       </div>
     }
 
-    <!-- Details -->
-    <div class="px-6 py-6 flex flex-col gap-4">
-      <p class="text-xs font-display uppercase tracking-widest text-ember" aria-hidden="true">✦ Detalles del film</p>
+    <!-- Momentos -->
+    @if (captures().length > 0 || capturesLoading()) {
+      <div class="px-4 pt-2 pb-4 flex flex-col gap-3">
+        <p class="text-xs font-display uppercase tracking-widest text-ember px-2 pt-4" aria-hidden="true">✦ Momentos</p>
 
-      <div class="flex flex-col gap-0">
-        <div class="flex items-center justify-between py-3">
-          <span class="text-earth text-sm">Fechas</span>
-          <span class="text-paper text-sm">{{ startsLabel() }} → {{ revealLabel() }}</span>
+        <div class="grid grid-cols-2 gap-2" role="list" aria-label="Fotos del evento">
+          @for (capture of captures(); track capture.id) {
+            <div role="listitem" class="flex flex-col gap-1">
+              <div class="relative aspect-square rounded-xl overflow-hidden">
+                <div class="absolute inset-0 bg-linear-to-br" [class]="capture.gradient"></div>
+                @if (!capture.isRevealed) {
+                  <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1.5">
+                    <i class="ph ph-lock-simple text-paper/60 text-xl" aria-hidden="true"></i>
+                    <span class="text-paper/50 text-[10px] uppercase tracking-wider">Por revelar</span>
+                  </div>
+                }
+              </div>
+              <p class="text-paper/50 text-xs px-1 truncate">{{ capture.takenBy }}</p>
+            </div>
+          }
         </div>
-        <div class="h-px bg-paper/8"></div>
-        <div class="flex items-center justify-between py-3">
-          <span class="text-earth text-sm">Filtro</span>
-          <span class="text-paper text-sm">{{ filterLabel() }}</span>
-        </div>
-        @if (event()!.maxParticipants !== null) {
-          <div class="h-px bg-paper/8"></div>
-          <div class="flex items-center justify-between py-3">
-            <span class="text-earth text-sm">Invitados máx.</span>
-            <span class="text-paper text-sm">{{ event()!.maxParticipants }}</span>
-          </div>
-        }
-        @if (event()!.maxShotsPerParticipant !== null && event()!.maxShotsPerParticipant !== -1) {
-          <div class="h-px bg-paper/8"></div>
-          <div class="flex items-center justify-between py-3">
-            <span class="text-earth text-sm">Fotos por persona</span>
-            <span class="text-paper text-sm">{{ event()!.maxShotsPerParticipant }}</span>
-          </div>
-        }
       </div>
-    </div>
+    }
 
   } @else {
 
@@ -131,4 +136,11 @@
     </div>
 
   }
+
+  <!-- Sentinel + load-more indicator — always in DOM so ViewChild resolves -->
+  <div #sentinel class="flex items-center justify-center py-6">
+    @if (capturesLoading()) {
+      <app-spinner size="sm" />
+    }
+  </div>
 </div>

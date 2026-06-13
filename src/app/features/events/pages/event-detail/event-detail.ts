@@ -1,7 +1,11 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  OnDestroy,
   OnInit,
+  ViewChild,
   computed,
   inject,
   signal,
@@ -15,11 +19,36 @@ import { EventResponse, EventStatus } from '../../../../shared/interfaces/event.
 
 type EventGradient = 'crimson-ember' | 'ember-sun' | 'earth';
 
+interface Capture {
+  id:         string;
+  takenBy:    string;
+  gradient:   string;
+  isRevealed: boolean;
+}
+
 const GRADIENT_MAP: Record<EventGradient, string> = {
   'crimson-ember': 'from-crimson to-ember',
   'ember-sun':     'from-ember to-sun',
   'earth':         'from-earth to-ink-soft',
 };
+
+const CAPTURE_GRADIENTS = [
+  'from-crimson to-ember',
+  'from-ember to-sun',
+  'from-earth to-ink-soft',
+  'from-sage to-earth',
+  'from-crimson-light to-crimson',
+  'from-ember-deep to-earth',
+];
+
+const MOCK_NAMES = [
+  'Ana García', 'Luis Martínez', 'Carlos Padrón', 'María López',
+  'Juan Hernández', 'Sofía Ramírez', 'Pedro Sánchez', 'Laura Torres',
+  'Miguel Flores', 'Isabel Castro', 'Diego Morales', 'Valentina Ruiz',
+];
+
+const MAX_PAGES          = 3;
+const CAPTURES_PER_PAGE  = 6;
 
 @Component({
   selector: 'app-event-detail',
@@ -28,18 +57,26 @@ const GRADIENT_MAP: Record<EventGradient, string> = {
   imports: [QRCodeComponent, Spinner],
   templateUrl: './event-detail.html',
 })
-export class EventDetail implements OnInit {
+export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('sentinel', { static: true })
+  private readonly sentinel!: ElementRef<HTMLDivElement>;
+
   private readonly route        = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
   private readonly location     = inject(Location);
   private readonly doc          = inject(DOCUMENT);
 
-  readonly event   = signal<EventResponse | null>(null);
-  readonly loading = signal(true);
-  readonly copied  = signal(false);
-  readonly showQr  = signal(false);
+  readonly event           = signal<EventResponse | null>(null);
+  readonly loading         = signal(true);
+  readonly copied          = signal(false);
+  readonly showQr          = signal(false);
+  readonly captures        = signal<Capture[]>([]);
+  readonly capturesLoading = signal(false);
+  readonly hasMore         = signal(true);
 
-  // Use gradient passed from home card while the API call is in flight.
+  private capturesPage = 0;
+  private observer: IntersectionObserver | null = null;
+
   private readonly gradient = signal<EventGradient>(
     ((this.doc.defaultView?.history.state as { gradient?: EventGradient } | null)?.gradient)
       ?? 'crimson-ember'
@@ -57,7 +94,7 @@ export class EventDetail implements OnInit {
   readonly statusLabel = computed(() => {
     const labels: Record<EventStatus, string> = {
       scheduled: 'Programado',
-      active:    'Activo',
+      live:      'En vivo',
       closed:    'Cerrado',
       archived:  'Archivado',
       deleted:   'Eliminado',
@@ -72,15 +109,35 @@ export class EventDetail implements OnInit {
     return ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[filter] ?? 'Normal';
   });
 
-  readonly startsLabel = computed(() => this.formatDate(this.event()?.startsAt));
-  readonly revealLabel = computed(() => this.formatDate(this.event()?.revealAt));
+  readonly startsShort = computed(() => this.formatShortDate(this.event()?.startsAt));
+  readonly revealShort = computed(() => this.formatShortDate(this.event()?.revealAt));
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.eventService.getEvent(id).subscribe({
-      next:  (e) => { this.event.set(e); this.loading.set(false); },
-      error: ()  => this.loading.set(false),
+      next: (e) => {
+        this.event.set(e);
+        this.loading.set(false);
+        this.loadCaptures();
+      },
+      error: () => this.loading.set(false),
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && this.event() && this.hasMore() && !this.capturesLoading()) {
+          this.loadCaptures();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
   }
 
   goBack(): void {
@@ -107,10 +164,37 @@ export class EventDetail implements OnInit {
     }
   }
 
-  private formatDate(isoString?: string): string {
-    if (!isoString) return '';
-    return new Date(isoString).toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
+  private loadCaptures(): void {
+    if (this.capturesLoading() || !this.hasMore()) return;
+    this.capturesPage++;
+    if (this.capturesPage > MAX_PAGES) {
+      this.hasMore.set(false);
+      return;
+    }
+
+    this.capturesLoading.set(true);
+    setTimeout(() => {
+      const batch = this.generateMockCaptures(this.capturesPage, CAPTURES_PER_PAGE);
+      this.captures.update(prev => [...prev, ...batch]);
+      this.capturesLoading.set(false);
+      if (this.capturesPage >= MAX_PAGES) this.hasMore.set(false);
+    }, 600);
+  }
+
+  private generateMockCaptures(page: number, count: number): Capture[] {
+    return Array.from({ length: count }, (_, i) => {
+      const idx = (page - 1) * count + i;
+      return {
+        id:         `mock-${idx}`,
+        takenBy:    MOCK_NAMES[idx % MOCK_NAMES.length],
+        gradient:   CAPTURE_GRADIENTS[idx % CAPTURE_GRADIENTS.length],
+        isRevealed: idx % 4 !== 2,
+      };
     });
+  }
+
+  private formatShortDate(isoString?: string): string {
+    if (!isoString) return '';
+    return new Date(isoString).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
   }
 }

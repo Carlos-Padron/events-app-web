@@ -31,13 +31,10 @@ export class HomeEvent implements OnInit {
   readonly loading = signal(true);
   readonly error   = signal(false);
 
-  readonly liveEvents = computed(() =>
-    this.events().filter(e => e.status === 'active' || e.status === 'scheduled')
-  );
-  readonly pastEvents = computed(() =>
-    this.events().filter(e => e.status === 'closed' || e.status === 'archived')
-  );
-  readonly hasLive = computed(() => this.liveEvents().length > 0);
+  readonly liveEvents      = computed(() => this.events().filter(e => e.status === 'live'));
+  readonly scheduledEvents = computed(() => this.events().filter(e => e.status === 'scheduled'));
+  readonly pastEvents      = computed(() => this.events().filter(e => e.status === 'closed' || e.status === 'archived'));
+  readonly hasLive         = computed(() => this.liveEvents().length > 0);
 
   readonly gradientMap: Record<EventGradient, string> = {
     'crimson-ember': 'from-crimson to-ember',
@@ -47,7 +44,7 @@ export class HomeEvent implements OnInit {
 
   readonly statusLabel: Record<EventStatus, string> = {
     scheduled: 'Programado',
-    active:    'En vivo',
+    live:      'En vivo',
     closed:    'Cerrado',
     archived:  'Archivado',
     deleted:   'Eliminado',
@@ -77,7 +74,7 @@ export class HomeEvent implements OnInit {
 
   cardClass(e: EventItem): string {
     const opacity = e.status === 'archived' ? 'opacity-60' : '';
-    return `relative rounded-2xl overflow-hidden w-full bg-gradient-to-br ${this.gradientMap[e.gradient]} ${opacity}`;
+    return `relative rounded-2xl overflow-hidden w-full bg-linear-to-br ${this.gradientMap[e.gradient]} ${opacity}`;
   }
 
   private toItem(e: EventResponse, index: number): EventItem {
@@ -92,7 +89,7 @@ export class HomeEvent implements OnInit {
 
   private buildDetails(e: EventResponse): string {
     const photos = `${e.captureCount} fotos`;
-    if (e.status === 'active' || e.status === 'scheduled') {
+    if (e.status === 'live' || e.status === 'scheduled') {
       return `${e.participantCount} participantes · ${photos}`;
     }
     const date = new Date(e.startsAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
