@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
@@ -8,10 +15,10 @@ import { EventResponse, EventStatus } from '../../../../shared/interfaces/event.
 type EventGradient = 'crimson-ember' | 'ember-sun' | 'earth';
 
 interface EventItem {
-  id:       string;
-  title:    string;
-  details:  string;
-  status:   EventStatus;
+  id: string;
+  title: string;
+  details: string;
+  status: EventStatus;
   gradient: EventGradient;
 }
 
@@ -27,27 +34,29 @@ const GRADIENTS: EventGradient[] = ['crimson-ember', 'ember-sun', 'earth'];
 export class HomeEvent implements OnInit {
   private readonly eventService = inject(EventService);
 
-  readonly events  = signal<EventItem[]>([]);
+  readonly events = signal<EventItem[]>([]);
   readonly loading = signal(true);
-  readonly error   = signal(false);
+  readonly error = signal(false);
 
-  readonly liveEvents      = computed(() => this.events().filter(e => e.status === 'live'));
-  readonly scheduledEvents = computed(() => this.events().filter(e => e.status === 'scheduled'));
-  readonly pastEvents      = computed(() => this.events().filter(e => e.status === 'closed' || e.status === 'archived'));
-  readonly hasLive         = computed(() => this.liveEvents().length > 0);
+  readonly liveEvents = computed(() => this.events().filter((e) => e.status === 'live'));
+  readonly scheduledEvents = computed(() => this.events().filter((e) => e.status === 'scheduled'));
+  readonly pastEvents = computed(() =>
+    this.events().filter((e) => e.status === 'closed' || e.status === 'archived'),
+  );
+  readonly hasLive = computed(() => this.liveEvents().length > 0);
 
   readonly gradientMap: Record<EventGradient, string> = {
     'crimson-ember': 'from-crimson to-ember',
-    'ember-sun':     'from-ember to-sun',
-    'earth':         'from-earth to-ink-soft',
+    'ember-sun': 'from-ember to-sun',
+    earth: 'from-earth to-ink-soft',
   };
 
   readonly statusLabel: Record<EventStatus, string> = {
     scheduled: 'Programado',
-    live:      'En vivo',
-    closed:    'Cerrado',
-    archived:  'Archivado',
-    deleted:   'Eliminado',
+    live: 'En vivo',
+    closed: 'Cerrado',
+    archived: 'Archivado',
+    deleted: 'Eliminado',
   };
 
   ngOnInit(): void {
@@ -59,9 +68,8 @@ export class HomeEvent implements OnInit {
     this.error.set(false);
     this.eventService.getMyEvents().subscribe({
       next: ({ data }) => {
-        this.events.set(data
-          .filter(e => e.status !== 'deleted')
-          .map((e, i) => this.toItem(e, i))
+        this.events.set(
+          data.filter((e) => e.status !== 'deleted').map((e, i) => this.toItem(e, i)),
         );
         this.loading.set(false);
       },
@@ -79,10 +87,10 @@ export class HomeEvent implements OnInit {
 
   private toItem(e: EventResponse, index: number): EventItem {
     return {
-      id:       e.id,
-      title:    e.name,
-      details:  this.buildDetails(e),
-      status:   e.status,
+      id: e.id,
+      title: e.name,
+      details: this.buildDetails(e),
+      status: e.status,
       gradient: GRADIENTS[index % GRADIENTS.length],
     };
   }
@@ -92,7 +100,11 @@ export class HomeEvent implements OnInit {
     if (e.status === 'live' || e.status === 'scheduled') {
       return `${e.participantCount} participantes · ${photos}`;
     }
-    const date = new Date(e.startsAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    const date = new Date(e.startsAt).toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
     return `${date} · ${photos}`;
   }
 }
