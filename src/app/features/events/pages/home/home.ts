@@ -11,8 +11,13 @@ import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { EventService } from '../../services/event.service';
 import { EventResponse, EventStatus } from '../../../../shared/interfaces/event.interface';
-
-type EventGradient = 'crimson-ember' | 'ember-sun' | 'earth';
+import {
+  EventGradient,
+  EVENT_GRADIENTS,
+  EVENT_GRADIENT_KEYS,
+} from '../../../../shared/constants/gradients';
+import { EVENT_STATUS_LABELS } from '../../../../shared/constants/event-labels';
+import { formatMedium } from '../../../../shared/utils/date.util';
 
 interface EventItem {
   id: string;
@@ -21,8 +26,6 @@ interface EventItem {
   status: EventStatus;
   gradient: EventGradient;
 }
-
-const GRADIENTS: EventGradient[] = ['crimson-ember', 'ember-sun', 'earth'];
 
 @Component({
   selector: 'app-home-event',
@@ -45,19 +48,8 @@ export class HomeEvent implements OnInit {
   );
   readonly hasLive = computed(() => this.liveEvents().length > 0);
 
-  readonly gradientMap: Record<EventGradient, string> = {
-    'crimson-ember': 'from-crimson to-ember',
-    'ember-sun': 'from-ember to-sun',
-    earth: 'from-earth to-ink-soft',
-  };
-
-  readonly statusLabel: Record<EventStatus, string> = {
-    scheduled: 'Programado',
-    live: 'En vivo',
-    closed: 'Cerrado',
-    archived: 'Archivado',
-    deleted: 'Eliminado',
-  };
+  // Exposed for the template's status badges.
+  readonly statusLabel = EVENT_STATUS_LABELS;
 
   ngOnInit(): void {
     this.load();
@@ -82,7 +74,7 @@ export class HomeEvent implements OnInit {
 
   cardClass(e: EventItem): string {
     const opacity = e.status === 'archived' ? 'opacity-60' : '';
-    return `relative rounded-2xl overflow-hidden w-full bg-linear-to-br ${this.gradientMap[e.gradient]} ${opacity}`;
+    return `relative rounded-2xl overflow-hidden w-full bg-linear-to-br ${EVENT_GRADIENTS[e.gradient]} ${opacity}`;
   }
 
   private toItem(e: EventResponse, index: number): EventItem {
@@ -91,7 +83,7 @@ export class HomeEvent implements OnInit {
       title: e.name,
       details: this.buildDetails(e),
       status: e.status,
-      gradient: GRADIENTS[index % GRADIENTS.length],
+      gradient: EVENT_GRADIENT_KEYS[index % EVENT_GRADIENT_KEYS.length],
     };
   }
 
@@ -100,11 +92,6 @@ export class HomeEvent implements OnInit {
     if (e.status === 'live' || e.status === 'scheduled') {
       return `${e.participantCount} participantes · ${photos}`;
     }
-    const date = new Date(e.startsAt).toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-    return `${date} · ${photos}`;
+    return `${formatMedium(e.startsAt)} · ${photos}`;
   }
 }

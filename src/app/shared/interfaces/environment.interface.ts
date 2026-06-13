@@ -1,3 +1,3 @@
-export interface iEnvironment {
+export interface Environment {
   API_ENDPOINT: string;
 }

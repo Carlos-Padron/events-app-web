@@ -3,13 +3,14 @@ import { Router } from '@angular/router';
 import { Button } from '../../../../components/button/button';
 import { EventDraftService } from './event-draft.service';
 import { EventService } from '../../services/event.service';
+import { CreateEventError } from '../../services/create-event-error';
 import { EventNameStep } from './steps/event-name-step/event-name-step';
 import { EventDateStep } from './steps/event-date-step/event-date-step';
 import { EventRevealStep } from './steps/event-reveal-step/event-reveal-step';
 import { EventCoverStep } from './steps/event-cover-step/event-cover-step';
 import { EventPhotoFilterStep } from './steps/event-photo-filter-step/event-photo-filter-step';
-import { EventParticipantsConfiguration } from "./steps/event-participants-configuration/event-participants-configuration";
-import { EventSummary } from "./steps/event-summary/event-summary";
+import { EventParticipantsConfiguration } from './steps/event-participants-configuration/event-participants-configuration';
+import { EventSummary } from './steps/event-summary/event-summary';
 
 @Component({
   selector: 'app-create',
@@ -29,15 +30,15 @@ import { EventSummary } from "./steps/event-summary/event-summary";
   templateUrl: './create-event.html',
 })
 export class CreateEvent {
-  private readonly draft        = inject(EventDraftService);
-  readonly eventService         = inject(EventService);
-  private readonly router       = inject(Router);
+  private readonly draft = inject(EventDraftService);
+  readonly eventService = inject(EventService);
+  private readonly router = inject(Router);
 
-  readonly totalSteps  = 7;
-  readonly stepsArray  = Array.from({ length: this.totalSteps }, (_, i) => i + 1);
+  readonly totalSteps = 7;
+  readonly stepsArray = Array.from({ length: this.totalSteps }, (_, i) => i + 1);
 
-  readonly currentStep    = signal(1);
-  readonly submitting     = signal(false);
+  readonly currentStep = signal(1);
+  readonly submitting = signal(false);
   // 'event' = POST /event failed (nothing was created)
   // 'cover' = event was created but cover upload failed (retry upload only)
   readonly submitErrorType = signal<'event' | 'cover' | null>(null);
@@ -61,7 +62,8 @@ export class CreateEvent {
         return !event || reveal > event;
       }
 
-      default: return true;
+      default:
+        return true;
     }
   });
 
@@ -78,22 +80,24 @@ export class CreateEvent {
     }
   }
 
+  goHome(): void {
+    this.router.navigate(['/eventos']);
+  }
+
   submit(): void {
     if (this.submitting()) return;
     this.submitting.set(true);
     this.submitErrorType.set(null);
 
     this.eventService.create(this.draft.data()).subscribe({
-      next:  (event) => this.router.navigate(['/eventos', event.id, 'listo'], {
-        state: { event, coverFile: this.draft.data().coverFile ?? undefined },
-      }),
-      error: () => {
+      next: (event) =>
+        this.router.navigate(['/eventos', event.id, 'listo'], {
+          state: { event, coverFile: this.draft.data().coverFile ?? undefined },
+        }),
+      error: (err) => {
         this.submitting.set(false);
-        // If pendingCoverUpload is set the event was created — only the cover failed.
-        // If it's null the event creation itself failed.
-        this.submitErrorType.set(
-          this.eventService.pendingCoverUpload() ? 'cover' : 'event'
-        );
+        // create() throws CreateEventError carrying the phase that failed.
+        this.submitErrorType.set(err instanceof CreateEventError ? err.phase : 'event');
       },
     });
   }
@@ -105,7 +109,7 @@ export class CreateEvent {
 
     const pendingId = this.eventService.pendingCoverUpload()?.eventId;
     this.eventService.retryCoverUpload().subscribe({
-      next:  () => this.router.navigate(['/eventos', pendingId, 'listo']),
+      next: () => this.router.navigate(['/eventos', pendingId, 'listo']),
       error: () => {
         this.submitting.set(false);
         this.submitErrorType.set('cover');

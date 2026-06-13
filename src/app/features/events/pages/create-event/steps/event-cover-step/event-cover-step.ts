@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Button } from '../../../../../../components/button/button';
 import { EventDraftService } from '../../event-draft.service';
+import { formatLongDate } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-event-cover-step',
@@ -12,11 +13,7 @@ import { EventDraftService } from '../../event-draft.service';
 export class EventCoverStep {
   readonly draft = inject(EventDraftService);
 
-  dateLabel = computed(() => {
-    const d = this.draft.data().date;
-    if (!d) return '';
-    return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-  });
+  dateLabel = computed(() => formatLongDate(this.draft.data().date));
 
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];

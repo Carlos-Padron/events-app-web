@@ -1,5 +1,4 @@
 @if (isLastStep()) {
-
   <!-- Summary: full-screen card with overlaid controls -->
   <div class="flex-1 relative flex flex-col bg-ink">
     <app-event-summary
@@ -15,9 +14,7 @@
       </app-button>
     </div>
   </div>
-
 } @else {
-
   <div class="flex-1 overflow-y-auto flex flex-col bg-ink px-6 py-10">
     <!-- Step indicator -->
     <div class="flex items-center mb-10">
@@ -25,6 +22,15 @@
         @if (currentStep() > 1) {
           <app-button [icon]="true" variant="primary" (click)="back()">
             <i class="ph ph-caret-left"></i>
+          </app-button>
+        } @else {
+          <app-button
+            [icon]="true"
+            variant="primary"
+            (click)="goHome()"
+            aria-label="Volver a mis eventos"
+          >
+            <i class="ph ph-x"></i>
           </app-button>
         }
       </div>
@@ -45,20 +51,37 @@
 
     <!-- Step content -->
     @switch (currentStep()) {
-      @case (1) { <app-event-name-step /> }
-      @case (2) { <app-event-date-step /> }
-      @case (3) { <app-event-reveal-step /> }
-      @case (4) { <app-event-photo-filter-step /> }
-      @case (5) { <app-event-participants-configuration /> }
-      @case (6) { <app-event-cover-step /> }
+      @case (1) {
+        <app-event-name-step />
+      }
+      @case (2) {
+        <app-event-date-step />
+      }
+      @case (3) {
+        <app-event-reveal-step />
+      }
+      @case (4) {
+        <app-event-photo-filter-step />
+      }
+      @case (5) {
+        <app-event-participants-configuration />
+      }
+      @case (6) {
+        <app-event-cover-step />
+      }
     }
 
     <!-- Actions -->
     <div class="flex flex-col gap-3 pt-6">
-      <app-button variant="accent" size="lg" [fullWidth]="true" [disabled]="!canProceed()" (click)="next()">
+      <app-button
+        variant="accent"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="!canProceed()"
+        (click)="next()"
+      >
         Continuar
       </app-button>
     </div>
   </div>
-
 }

@@ -37,8 +37,8 @@ export class FilmCard {
 
   avatarClass = computed(() => {
     const gradients: Record<FilmGradient, string> = {
-      'crimson-ember': 'bg-gradient-to-br from-crimson to-ember',
-      'ember-sun':     'bg-gradient-to-br from-ember to-sun',
+      'crimson-ember': 'bg-linear-to-br from-crimson to-ember',
+      'ember-sun':     'bg-linear-to-br from-ember to-sun',
       'earth':         'bg-earth/20',
     };
     const textColor = this.isLive() ? 'text-paper' : 'text-ink';

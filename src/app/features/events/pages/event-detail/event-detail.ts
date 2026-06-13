@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -10,45 +11,23 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DOCUMENT, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { EventService } from '../../services/event.service';
-import { EventResponse, EventStatus } from '../../../../shared/interfaces/event.interface';
-
-type EventGradient = 'crimson-ember' | 'ember-sun' | 'earth';
-
-interface Capture {
-  id:         string;
-  takenBy:    string;
-  gradient:   string;
-  isRevealed: boolean;
-}
-
-const GRADIENT_MAP: Record<EventGradient, string> = {
-  'crimson-ember': 'from-crimson to-ember',
-  'ember-sun':     'from-ember to-sun',
-  'earth':         'from-earth to-ink-soft',
-};
-
-const CAPTURE_GRADIENTS = [
-  'from-crimson to-ember',
-  'from-ember to-sun',
-  'from-earth to-ink-soft',
-  'from-sage to-earth',
-  'from-crimson-light to-crimson',
-  'from-ember-deep to-earth',
-];
-
-const MOCK_NAMES = [
-  'Ana García', 'Luis Martínez', 'Carlos Padrón', 'María López',
-  'Juan Hernández', 'Sofía Ramírez', 'Pedro Sánchez', 'Laura Torres',
-  'Miguel Flores', 'Isabel Castro', 'Diego Morales', 'Valentina Ruiz',
-];
-
-const MAX_PAGES          = 3;
-const CAPTURES_PER_PAGE  = 6;
+import { CaptureService, Capture } from '../../services/capture.service';
+import { EventResponse } from '../../../../shared/interfaces/event.interface';
+import { EventGradient, EVENT_GRADIENTS } from '../../../../shared/constants/gradients';
+import {
+  EVENT_STATUS_LABELS,
+  PHOTO_FILTER_LABELS,
+} from '../../../../shared/constants/event-labels';
+import { LOCALE } from '../../../../shared/constants/locale';
+import { formatShort } from '../../../../shared/utils/date.util';
+import { buildJoinUrl } from '../../../../shared/utils/join-url.util';
+import { ClipboardService, COPY_FEEDBACK_MS } from '../../../../common/services/clipboard.service';
 
 @Component({
   selector: 'app-event-detail',
@@ -61,57 +40,52 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('sentinel', { static: true })
   private readonly sentinel!: ElementRef<HTMLDivElement>;
 
-  private readonly route        = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
-  private readonly location     = inject(Location);
-  private readonly doc          = inject(DOCUMENT);
+  private readonly captureService = inject(CaptureService);
+  private readonly location = inject(Location);
+  private readonly doc = inject(DOCUMENT);
+  private readonly clipboard = inject(ClipboardService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly event           = signal<EventResponse | null>(null);
-  readonly loading         = signal(true);
-  readonly copied          = signal(false);
-  readonly showQr          = signal(false);
-  readonly captureError    = signal<string | null>(null);
-  readonly captures        = signal<Capture[]>([]);
+  readonly event = signal<EventResponse | null>(null);
+  readonly loading = signal(true);
+  readonly copied = signal(false);
+  readonly showQr = signal(false);
+  readonly captureError = signal<string | null>(null);
+  readonly captures = signal<Capture[]>([]);
   readonly capturesLoading = signal(false);
-  readonly hasMore         = signal(true);
+  readonly hasMore = signal(true);
 
   private capturesPage = 0;
   private observer: IntersectionObserver | null = null;
 
   private readonly gradient = signal<EventGradient>(
-    ((this.doc.defaultView?.history.state as { gradient?: EventGradient } | null)?.gradient)
-      ?? 'crimson-ember'
+    (this.doc.defaultView?.history.state as { gradient?: EventGradient } | null)?.gradient ??
+      'crimson-ember',
   );
 
-  readonly heroClass = computed(() =>
-    `relative h-64 bg-gradient-to-br ${GRADIENT_MAP[this.gradient()]}`
+  readonly heroClass = computed(
+    () => `relative h-64 bg-linear-to-br ${EVENT_GRADIENTS[this.gradient()]}`,
   );
 
   readonly joinUrl = computed(() => {
     const e = this.event();
-    return e ? `${this.doc.location.origin}/join/${e.invitationToken}` : '';
+    return e ? buildJoinUrl(this.doc.location.origin, e.invitationToken) : '';
   });
 
   readonly statusLabel = computed(() => {
-    const labels: Record<EventStatus, string> = {
-      scheduled: 'Programado',
-      live:      'En vivo',
-      closed:    'Cerrado',
-      archived:  'Archivado',
-      deleted:   'Eliminado',
-    };
     const e = this.event();
-    return e ? labels[e.status] : '';
+    return e ? EVENT_STATUS_LABELS[e.status] : '';
   });
 
   readonly filterLabel = computed(() => {
     const filter = this.event()?.photoFilter;
-    if (!filter) return 'Normal';
-    return ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[filter] ?? 'Normal';
+    return filter ? PHOTO_FILTER_LABELS[filter] : PHOTO_FILTER_LABELS.normal;
   });
 
-  readonly startsShort = computed(() => this.formatShortDate(this.event()?.startsAt));
-  readonly revealShort = computed(() => this.formatShortDate(this.event()?.revealAt));
+  readonly startsShort = computed(() => formatShort(this.event()?.startsAt));
+  readonly revealShort = computed(() => formatShort(this.event()?.revealAt));
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -145,24 +119,30 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
     const e = this.event();
     if (!e) return;
 
-    const now      = Date.now();
+    const now = Date.now();
     const startsAt = new Date(e.startsAt).getTime();
-    const endsAt   = new Date(e.endsAt).getTime();
+    const endsAt = new Date(e.endsAt).getTime();
 
     let error: string | null = null;
 
     if (e.status !== 'live') {
       error = 'El film aún no está en curso.';
     } else if (now < startsAt) {
-      const when = new Date(e.startsAt).toLocaleString('es-MX', {
-        timeZone: e.timezone, day: 'numeric', month: 'short',
-        hour: '2-digit', minute: '2-digit',
+      const when = new Date(e.startsAt).toLocaleString(LOCALE, {
+        timeZone: e.timezone,
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
       });
       error = `El film comienza el ${when} (${e.timezone}).`;
     } else if (now > endsAt) {
-      const when = new Date(e.endsAt).toLocaleString('es-MX', {
-        timeZone: e.timezone, day: 'numeric', month: 'short',
-        hour: '2-digit', minute: '2-digit',
+      const when = new Date(e.endsAt).toLocaleString(LOCALE, {
+        timeZone: e.timezone,
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
       });
       error = `El film terminó el ${when}.`;
     }
@@ -181,18 +161,19 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   copyLink(): void {
-    const url = this.joinUrl();
-    if (!url) return;
-    this.doc.defaultView?.navigator.clipboard.writeText(url).then(() => {
+    this.clipboard.copy(this.joinUrl()).then((ok) => {
+      if (!ok) return;
       this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 2000);
+      setTimeout(() => this.copied.set(false), COPY_FEEDBACK_MS);
     });
   }
 
   share(): void {
-    const url  = this.joinUrl();
+    const url = this.joinUrl();
     const name = this.event()?.name ?? '';
-    const nav  = this.doc.defaultView?.navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    const nav = this.doc.defaultView?.navigator as Navigator & {
+      share?: (d: ShareData) => Promise<void>;
+    };
     if (nav?.share) {
       nav.share({ title: name, url });
     } else {
@@ -201,36 +182,18 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadCaptures(): void {
-    if (this.capturesLoading() || !this.hasMore()) return;
-    this.capturesPage++;
-    if (this.capturesPage > MAX_PAGES) {
-      this.hasMore.set(false);
-      return;
-    }
+    const e = this.event();
+    if (!e || this.capturesLoading() || !this.hasMore()) return;
 
     this.capturesLoading.set(true);
-    setTimeout(() => {
-      const batch = this.generateMockCaptures(this.capturesPage, CAPTURES_PER_PAGE);
-      this.captures.update(prev => [...prev, ...batch]);
-      this.capturesLoading.set(false);
-      if (this.capturesPage >= MAX_PAGES) this.hasMore.set(false);
-    }, 600);
-  }
-
-  private generateMockCaptures(page: number, count: number): Capture[] {
-    return Array.from({ length: count }, (_, i) => {
-      const idx = (page - 1) * count + i;
-      return {
-        id:         `mock-${idx}`,
-        takenBy:    MOCK_NAMES[idx % MOCK_NAMES.length],
-        gradient:   CAPTURE_GRADIENTS[idx % CAPTURE_GRADIENTS.length],
-        isRevealed: idx % 4 !== 2,
-      };
-    });
-  }
-
-  private formatShortDate(isoString?: string): string {
-    if (!isoString) return '';
-    return new Date(isoString).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+    this.captureService
+      .getCaptures(e.id, this.capturesPage + 1)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ captures, hasMore }) => {
+        this.capturesPage++;
+        this.captures.update((prev) => [...prev, ...captures]);
+        this.hasMore.set(hasMore);
+        this.capturesLoading.set(false);
+      });
   }
 }

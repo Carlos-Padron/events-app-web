@@ -28,7 +28,7 @@ export class Avatar {
       crimson:  'bg-crimson text-paper',
       sun:      'bg-sun text-ink',
       earth:    'bg-earth text-paper',
-      gradient: 'bg-gradient-to-br from-ember to-crimson text-paper',
+      gradient: 'bg-linear-to-br from-ember to-crimson text-paper',
     };
 
     return `rounded-full flex items-center justify-center font-semibold ${sizes[this.size()]} ${colors[this.color()]}`;

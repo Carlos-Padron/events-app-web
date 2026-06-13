@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Button } from '../../../../../../components/button/button';
 import { EventDraftService } from '../../event-draft.service';
+import { PHOTO_FILTER_LABELS } from '../../../../../../shared/constants/event-labels';
+import { LOCALE } from '../../../../../../shared/constants/locale';
+import { formatFullDate } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-event-summary',
@@ -10,20 +13,22 @@ import { EventDraftService } from '../../event-draft.service';
   templateUrl: './event-summary.html',
 })
 export class EventSummary {
-  readonly draft       = inject(EventDraftService);
-  readonly create      = output<void>();
+  readonly draft = inject(EventDraftService);
+  readonly create = output<void>();
   readonly retryUpload = output<void>();
-  readonly isLoading   = input(false);
-  readonly errorType   = input<'event' | 'cover' | null>(null);
+  readonly isLoading = input(false);
+  readonly errorType = input<'event' | 'cover' | null>(null);
 
-  filterLabel = computed(() =>
-    ({ normal: 'Normal', vintage: 'Vintage', bw: 'B & N' })[this.draft.data().filter]
-  );
+  filterLabel = computed(() => PHOTO_FILTER_LABELS[this.draft.data().filter]);
 
   revealLabel = computed(() => {
     const d = this.draft.data().revealDate;
     if (!d) return 'Sin fecha';
-    const label = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+    const label = d.toLocaleDateString(LOCALE, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
     const h = String(d.getHours()).padStart(2, '0');
     const m = String(d.getMinutes()).padStart(2, '0');
     return `${label} · ${h}:${m}`;
@@ -31,8 +36,7 @@ export class EventSummary {
 
   dateLabel = computed(() => {
     const d = this.draft.data().date;
-    if (!d) return 'Sin fecha';
-    return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return d ? formatFullDate(d) : 'Sin fecha';
   });
 
   shotsLabel = computed(() => {

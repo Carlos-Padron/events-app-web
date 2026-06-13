@@ -1,5 +1,5 @@
-import { iEnvironment } from "../app/shared/interfaces/environment.interface";
+import { Environment } from '../app/shared/interfaces/environment.interface';
 
-export const environment: iEnvironment = {
-    API_ENDPOINT: "http://localhost:3000"
+export const environment: Environment = {
+  API_ENDPOINT: 'http://localhost:3000',
 };

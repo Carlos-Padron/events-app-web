@@ -1,9 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map, Observable, of, switchMap, tap, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
 import { EventDraft } from '../pages/create-event/event-draft.service';
+import { CreateEventError } from './create-event-error';
 import {
   CoverUploadUrlResponse,
   CreateEventDto,
@@ -35,10 +36,12 @@ export class EventService {
     const dto = this.buildDto(draft);
 
     return this.http.post<EventResponse>(url, dto).pipe(
+      // Tag a POST failure as the 'event' phase: nothing was created.
+      catchError((err) => throwError(() => new CreateEventError('event', err))),
       // Once the event exists we have its id, which is required to request the
       // R2 upload URL. That's why the cover upload is chained here instead of
       // running in parallel.
-      switchMap(event => {
+      switchMap((event) => {
         if (!draft.coverFile) return of(event);
 
         // Save before starting so a failure mid-upload leaves the signal set,
@@ -50,6 +53,8 @@ export class EventService {
           // uploadCover returns void — swap it back to the event so the
           // observable chain keeps the correct return type (EventResponse).
           map(() => event),
+          // Tag an upload failure as the 'cover' phase and carry the created event.
+          catchError((err) => throwError(() => new CreateEventError('cover', err, event))),
         );
       }),
     );
@@ -61,9 +66,9 @@ export class EventService {
 
   getMyEvents(page = 1, limit = 50): Observable<PaginatedResponse<EventResponse>> {
     const params = { page: String(page), limit: String(limit) };
-    return this.http.get<PaginatedResponse<EventResponse>>(
-      `${API}${API_ENDPOINTS.events.mine}`, { params }
-    );
+    return this.http.get<PaginatedResponse<EventResponse>>(`${API}${API_ENDPOINTS.events.mine}`, {
+      params,
+    });
   }
 
   /**
@@ -90,19 +95,21 @@ export class EventService {
    */
   private uploadCover(eventId: string, file: File): Observable<void> {
     const uploadUrlEndpoint = `${API}${API_ENDPOINTS.events.coverUploadUrl(eventId)}`;
-    const patchEndpoint     = `${API}${API_ENDPOINTS.events.patchCover(eventId)}`;
+    const patchEndpoint = `${API}${API_ENDPOINTS.events.patchCover(eventId)}`;
 
     return this.http.post<CoverUploadUrlResponse>(uploadUrlEndpoint, {}).pipe(
       switchMap(({ uploadUrl, storageKey }) =>
         // PUT goes directly to Cloudflare R2 using the signed URL — NOT to our API.
         // The auth interceptor only attaches the Bearer token to requests that start
         // with environment.API_ENDPOINT, so this R2 request goes out without it.
-        this.http.put(uploadUrl, file, {
-          // headers: new HttpHeaders({ 'Content-Type': file.type }),
-        }).pipe(
-          // Once R2 confirms the file is stored, tell our API to start processing it.
-          switchMap(() => this.http.patch(patchEndpoint, { storageKey })),
-        )
+        this.http
+          .put(uploadUrl, file, {
+            // headers: new HttpHeaders({ 'Content-Type': file.type }),
+          })
+          .pipe(
+            // Once R2 confirms the file is stored, tell our API to start processing it.
+            switchMap(() => this.http.patch(patchEndpoint, { storageKey })),
+          ),
       ),
       map(() => void 0), // normalize the PATCH response to void
     );
@@ -115,14 +122,14 @@ export class EventService {
    */
   private buildDto(draft: EventDraft): CreateEventDto {
     return {
-      name:                   draft.name,
+      name: draft.name,
       // Browser timezone (e.g. "America/Mexico_City") tells the server how to
       // interpret startsAt/endsAt, which are sent as local time without a UTC offset.
-      timezone:               Intl.DateTimeFormat().resolvedOptions().timeZone,
-      startsAt:               this.toLocalDt(draft.date!),
-      endsAt:                 this.toLocalDt(draft.revealDate!),
-      photoFilter:            draft.filter,
-      maxParticipants:        draft.participantLimit,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      startsAt: this.toLocalDt(draft.date!),
+      endsAt: this.toLocalDt(draft.revealDate!),
+      photoFilter: draft.filter,
+      maxParticipants: draft.participantLimit,
       // The API uses -1 to mean unlimited; the draft uses null.
       maxShotsPerParticipant: draft.shotsPerParticipant ?? -1,
     };
@@ -135,7 +142,9 @@ export class EventService {
    */
   private toLocalDt(d: Date): string {
     const p = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
-           `T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    return (
+      `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
+      `T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+    );
   }
 }

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Calendar } from '../../../../../../components/calendar/calendar';
 import { EventDraftService } from '../../event-draft.service';
+import { formatDayMonthTime } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-event-reveal-step',
@@ -12,14 +13,13 @@ import { EventDraftService } from '../../event-draft.service';
 export class EventRevealStep {
   readonly draft = inject(EventDraftService);
 
-  eventDateLabel  = computed(() => this.formatDate(this.draft.data().date));
-  revealDateLabel = computed(() => this.formatDate(this.draft.data().revealDate));
-
-  private formatDate(d: Date | null): string | null {
-    if (!d) return null;
-    return d.toLocaleDateString('es-MX', {
-      weekday: 'short', day: 'numeric', month: 'short',
-      hour: '2-digit', minute: '2-digit',
-    });
-  }
+  // Returns null (not '') so the template's `?? '—'` fallback still fires.
+  eventDateLabel = computed(() => {
+    const d = this.draft.data().date;
+    return d ? formatDayMonthTime(d) : null;
+  });
+  revealDateLabel = computed(() => {
+    const d = this.draft.data().revealDate;
+    return d ? formatDayMonthTime(d) : null;
+  });
 }
