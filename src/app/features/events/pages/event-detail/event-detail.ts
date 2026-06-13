@@ -70,6 +70,7 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   readonly loading         = signal(true);
   readonly copied          = signal(false);
   readonly showQr          = signal(false);
+  readonly captureError    = signal<string | null>(null);
   readonly captures        = signal<Capture[]>([]);
   readonly capturesLoading = signal(false);
   readonly hasMore         = signal(true);
@@ -138,6 +139,41 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+  }
+
+  onCapturePress(): void {
+    const e = this.event();
+    if (!e) return;
+
+    const now      = Date.now();
+    const startsAt = new Date(e.startsAt).getTime();
+    const endsAt   = new Date(e.endsAt).getTime();
+
+    let error: string | null = null;
+
+    if (e.status !== 'live') {
+      error = 'El film aún no está en curso.';
+    } else if (now < startsAt) {
+      const when = new Date(e.startsAt).toLocaleString('es-MX', {
+        timeZone: e.timezone, day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit',
+      });
+      error = `El film comienza el ${when} (${e.timezone}).`;
+    } else if (now > endsAt) {
+      const when = new Date(e.endsAt).toLocaleString('es-MX', {
+        timeZone: e.timezone, day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit',
+      });
+      error = `El film terminó el ${when}.`;
+    }
+
+    if (error) {
+      this.captureError.set(error);
+      setTimeout(() => this.captureError.set(null), 3000);
+      return;
+    }
+
+    // TODO: navigate to capture screen
   }
 
   goBack(): void {
