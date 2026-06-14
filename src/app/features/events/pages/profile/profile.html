@@ -1,0 +1,106 @@
+<!-- Sticky header -->
+<div class="flex-shrink-0 bg-ink px-6 pt-10 pb-6">
+  <p class="text-xs font-display uppercase tracking-widest text-ember mb-3">✦ Reel</p>
+  <h1 class="font-display text-5xl font-light text-paper leading-tight">
+    Tu <em class="italic text-ember">perfil</em>
+  </h1>
+</div>
+
+<!-- Scrollable content -->
+<div class="flex-1 overflow-y-auto min-h-0 bg-ink px-6 pb-10">
+  <!-- Avatar + Name -->
+  <div class="flex flex-col items-center py-8 gap-3">
+    <div
+      class="w-24 h-24 rounded-full bg-ember/10 border border-ember/20 flex items-center justify-center"
+    >
+      <span class="font-display text-4xl text-ember font-light">C</span>
+    </div>
+    <div class="text-center">
+      <h2 class="font-display text-2xl text-paper font-light">Carlos</h2>
+      <p class="text-earth text-sm mt-0.5">carlos&#64;ejemplo.com</p>
+    </div>
+  </div>
+
+  <!-- Info card -->
+  <div class="bg-paper/5 border border-paper/10 rounded-2xl overflow-hidden mb-6">
+    <div class="px-5 py-4 flex items-center justify-between border-b border-paper/10">
+      <span class="text-[10px] uppercase tracking-widest text-paper/30 font-semibold"
+        >Miembro desde</span
+      >
+      <span class="text-paper/60 text-sm">Junio 2025</span>
+    </div>
+    <div class="px-5 py-4 flex items-center justify-between">
+      <span class="text-[10px] uppercase tracking-widest text-paper/30 font-semibold"
+        >Tipo de cuenta</span
+      >
+      <span class="text-ember text-sm font-semibold">Organizador</span>
+    </div>
+  </div>
+
+  <!-- Support -->
+  <div class="mb-6">
+    <p class="text-[10px] uppercase tracking-widest text-paper/30 font-semibold px-1 mb-2">
+      Soporte
+    </p>
+    <div class="bg-paper/5 border border-paper/10 rounded-2xl overflow-hidden">
+      <a
+        href="mailto:soporte@reel.app"
+        class="flex items-center gap-4 px-5 py-4 text-paper/70 hover:text-paper transition-colors"
+      >
+        <i class="ph ph-headset text-xl text-ember" aria-hidden="true"></i>
+        <span class="text-sm">Contactar soporte</span>
+        <i class="ph ph-arrow-right ml-auto text-paper/30 text-sm" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Account actions -->
+  <div class="mb-10">
+    <p class="text-[10px] uppercase tracking-widest text-paper/30 font-semibold px-1 mb-2">
+      Cuenta
+    </p>
+    <div class="bg-paper/5 border border-paper/10 rounded-2xl overflow-hidden">
+      <button
+        type="button"
+        (click)="logout()"
+        class="w-full flex items-center gap-4 px-5 py-4 text-paper/70 hover:text-paper transition-colors border-b border-paper/10 text-left"
+      >
+        <i class="ph ph-sign-out text-xl text-earth" aria-hidden="true"></i>
+        <span class="text-sm">Cerrar sesión</span>
+      </button>
+
+      @if (!showDeleteConfirm()) {
+        <button
+          type="button"
+          (click)="showDeleteConfirm.set(true)"
+          class="w-full flex items-center gap-4 px-5 py-4 text-crimson hover:text-crimson-light transition-colors text-left"
+        >
+          <i class="ph ph-trash text-xl" aria-hidden="true"></i>
+          <span class="text-sm">Eliminar cuenta</span>
+        </button>
+      } @else {
+        <div class="px-5 py-4 flex flex-col gap-3">
+          <p class="text-crimson text-sm font-semibold">¿Eliminar tu cuenta?</p>
+          <p class="text-paper/50 text-xs leading-relaxed">
+            Esta acción es permanente. Perderás todos tus films y datos asociados.
+          </p>
+          <div class="flex gap-2 pt-1">
+            <button
+              type="button"
+              (click)="showDeleteConfirm.set(false)"
+              class="flex-1 text-xs py-2.5 rounded-full border border-paper/20 text-paper/60 hover:text-paper hover:border-paper/40 transition-colors font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="flex-1 text-xs py-2.5 rounded-full bg-crimson text-paper font-semibold hover:bg-crimson-light transition-colors"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

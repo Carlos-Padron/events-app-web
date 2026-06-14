@@ -11,6 +11,10 @@ export const routes: Routes = [
   },
 
   {
+    path: 'perfil',
+    loadComponent: () => import('./profile/profile').then((c) => c.Profile),
+  },
+  {
     path: ':id/capturar',
     loadComponent: () => import('./capture/capture').then((c) => c.Capture),
   },

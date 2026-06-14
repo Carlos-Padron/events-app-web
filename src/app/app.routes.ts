@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { MobileShell } from './layout/mobile-shell/mobile-shell';
+import { EventsShell } from './layout/events-shell/events-shell';
 import { authGuard } from './common/guards/auth.guard';
 
 export const routes: Routes = [
@@ -13,6 +14,7 @@ export const routes: Routes = [
       },
       {
         path: 'eventos',
+        component: EventsShell,
         canActivate: [authGuard],
         loadChildren: () => import('./features/events/pages/events.routes').then((r) => r.routes),
       },

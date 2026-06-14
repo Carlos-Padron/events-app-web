@@ -30,7 +30,7 @@ interface EventItem {
 @Component({
   selector: 'app-home-event',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex-1 flex flex-col' },
+  host: { class: 'flex-1 flex flex-col min-h-0' },
   imports: [RouterLink, Button, Spinner],
   templateUrl: './home.html',
 })
@@ -40,6 +40,8 @@ export class HomeEvent implements OnInit {
   readonly events = signal<EventItem[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
+  readonly joinSheetOpen = signal(false);
+  readonly joinCode = signal('');
 
   readonly liveEvents = computed(() => this.events().filter((e) => e.status === 'live'));
   readonly scheduledEvents = computed(() => this.events().filter((e) => e.status === 'scheduled'));
