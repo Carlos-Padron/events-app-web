@@ -12,8 +12,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DOCUMENT, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { EventService } from '../../services/event.service';
@@ -41,9 +41,9 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   private readonly sentinel!: ElementRef<HTMLDivElement>;
 
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly eventService = inject(EventService);
   private readonly captureService = inject(CaptureService);
-  private readonly location = inject(Location);
   private readonly doc = inject(DOCUMENT);
   private readonly clipboard = inject(ClipboardService);
   private readonly destroyRef = inject(DestroyRef);
@@ -153,11 +153,11 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // TODO: navigate to capture screen
+    this.router.navigate(['/eventos', this.route.snapshot.paramMap.get('id'), 'capturar']);
   }
 
   goBack(): void {
-    this.location.back();
+    this.router.navigate(['/eventos']);
   }
 
   copyLink(): void {

@@ -1,0 +1,172 @@
+<div class="relative flex-1 bg-black overflow-hidden">
+  <!-- Camera stream -->
+  <video
+    #videoEl
+    class="absolute inset-0 w-full h-full object-cover"
+    autoplay
+    muted
+    playsinline
+  ></video>
+  <canvas #canvasEl class="hidden"></canvas>
+
+  @if (cameraError()) {
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8">
+      <p class="text-paper/50 text-sm text-center">{{ cameraError() }}</p>
+      <button class="px-4 py-2 bg-paper/10 rounded-full text-paper text-sm" (click)="startCamera()">
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Top bar -->
+  <div
+    class="absolute top-0 inset-x-0 flex items-center gap-3 px-4 pt-10 pb-8 bg-linear-to-b from-black/70 to-transparent"
+  >
+    <button
+      class="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0"
+      (click)="goBack()"
+      aria-label="Volver"
+    >
+      <i class="ph ph-arrow-left text-paper text-lg"></i>
+    </button>
+
+    <div class="flex-1 min-w-0 text-center">
+      @if (loading()) {
+        <div class="h-4 w-32 bg-paper/20 rounded mx-auto animate-pulse"></div>
+      } @else {
+        <p class="text-paper font-display text-lg font-light truncate">{{ event()?.name }}</p>
+        <p class="text-paper/50 text-xs mt-0.5">{{ timeLeft() }}</p>
+      }
+    </div>
+
+    <button
+      class="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0"
+      (click)="showQr.set(!showQr())"
+      [attr.aria-expanded]="showQr()"
+      aria-label="Ver código QR de invitación"
+    >
+      <i class="ph ph-qr-code text-paper text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="absolute bottom-0 inset-x-0 pb-10 pt-4 bg-linear-to-t from-black/70 to-transparent">
+    <!-- Zoom + flip row -->
+    <div class="flex items-center justify-between px-8 mb-6">
+      <div class="flex-1"></div>
+
+      <!-- Zoom pill — only shown when the device supports hardware zoom -->
+      @if (zoomSupported()) {
+        <div
+          class="bg-black/50 backdrop-blur-sm rounded-full p-1 flex"
+          role="group"
+          aria-label="Zoom"
+        >
+          <button
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
+            [class]="zoom() === 1 ? 'bg-paper text-ink' : 'text-paper/60'"
+            (click)="setZoom(1)"
+            aria-label="Zoom 1x"
+          >
+            1x
+          </button>
+          <button
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
+            [class]="zoom() === 2 ? 'bg-paper text-ink' : 'text-paper/60'"
+            (click)="setZoom(2)"
+            aria-label="Zoom 2x"
+          >
+            2x
+          </button>
+        </div>
+      }
+
+      <!-- Flip camera -->
+      <div class="flex-1 flex justify-end">
+        <button
+          class="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center"
+          (click)="flipCamera()"
+          aria-label="Cambiar cámara"
+        >
+          <i class="ph ph-camera-rotate text-paper text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Shutter row -->
+    <div class="flex items-center justify-between px-8">
+      <!-- Shot counter -->
+      <div class="w-16 flex justify-start">
+        <div
+          class="bg-black/60 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center gap-1.5"
+          aria-label="Contador de fotos"
+        >
+          @if (shotDisplay().prev !== null) {
+            <span class="text-paper/30 text-xs font-display leading-none">{{
+              shotDisplay().prev
+            }}</span>
+          }
+          <span class="text-paper font-display text-xl font-light leading-none">{{
+            shotDisplay().current
+          }}</span>
+          @if (shotDisplay().next !== null) {
+            <span class="text-paper/30 text-xs font-display leading-none">{{
+              shotDisplay().next
+            }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Shutter button -->
+      <button
+        class="w-20 h-20 rounded-full border-4 border-paper flex items-center justify-center transition-transform active:scale-90"
+        [class]="canTakePhoto() ? '' : 'opacity-30 pointer-events-none'"
+        (click)="takePhoto()"
+        aria-label="Tomar foto"
+      >
+        <div class="w-[60px] h-[60px] rounded-full bg-paper"></div>
+      </button>
+
+      <!-- Last photo thumbnail -->
+      <div class="w-16 h-16 flex justify-end">
+        <div
+          class="w-14 h-14 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm flex items-center justify-center border border-paper/20"
+        >
+          @if (lastPhotoUrl()) {
+            <img
+              [src]="lastPhotoUrl()"
+              class="w-full h-full object-cover"
+              alt="Última foto tomada"
+            />
+          } @else {
+            <i class="ph ph-image text-paper/30 text-xl" aria-hidden="true"></i>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR overlay -->
+  @if (showQr() && joinUrl()) {
+    <div
+      class="absolute inset-0 bg-black/85 flex flex-col items-center justify-center gap-4"
+      (click)="showQr.set(false)"
+      role="dialog"
+      aria-label="Código QR de invitación"
+    >
+      <div class="bg-paper rounded-2xl p-5 shadow-xl">
+        <qrcode
+          [qrdata]="joinUrl()"
+          [width]="200"
+          [margin]="1"
+          colorDark="#0E0C0A"
+          colorLight="#F7F2E8"
+          elementType="img"
+          ariaLabel="Código QR para unirse al evento"
+          cssClass="block"
+        />
+      </div>
+      <p class="text-paper/50 text-xs">Toca para cerrar</p>
+    </div>
+  }
+</div>

@@ -4,6 +4,7 @@ import { Button } from '../../../../components/button/button';
 import { EventDraftService } from './event-draft.service';
 import { EventService } from '../../services/event.service';
 import { CreateEventError } from '../../services/create-event-error';
+import { extractApiMessages } from '../../../../common/utils/api-error.util';
 import { EventNameStep } from './steps/event-name-step/event-name-step';
 import { EventDateStep } from './steps/event-date-step/event-date-step';
 import { EventRevealStep } from './steps/event-reveal-step/event-reveal-step';
@@ -31,7 +32,7 @@ import { EventSummary } from './steps/event-summary/event-summary';
 })
 export class CreateEvent {
   private readonly draft = inject(EventDraftService);
-  readonly eventService = inject(EventService);
+  private readonly eventService = inject(EventService);
   private readonly router = inject(Router);
 
   readonly totalSteps = 7;
@@ -42,6 +43,7 @@ export class CreateEvent {
   // 'event' = POST /event failed (nothing was created)
   // 'cover' = event was created but cover upload failed (retry upload only)
   readonly submitErrorType = signal<'event' | 'cover' | null>(null);
+  readonly submitErrorMessages = signal<string[]>([]);
 
   readonly isLastStep = computed(() => this.currentStep() === this.totalSteps);
 
@@ -88,16 +90,14 @@ export class CreateEvent {
     if (this.submitting()) return;
     this.submitting.set(true);
     this.submitErrorType.set(null);
+    this.submitErrorMessages.set([]);
 
     this.eventService.create(this.draft.data()).subscribe({
-      next: (event) =>
-        this.router.navigate(['/eventos', event.id, 'listo'], {
-          state: { event, coverFile: this.draft.data().coverFile ?? undefined },
-        }),
+      next: (event) => this.router.navigate(['/eventos', event.id]),
       error: (err) => {
         this.submitting.set(false);
-        // create() throws CreateEventError carrying the phase that failed.
         this.submitErrorType.set(err instanceof CreateEventError ? err.phase : 'event');
+        this.submitErrorMessages.set(extractApiMessages(err));
       },
     });
   }
@@ -109,7 +109,7 @@ export class CreateEvent {
 
     const pendingId = this.eventService.pendingCoverUpload()?.eventId;
     this.eventService.retryCoverUpload().subscribe({
-      next: () => this.router.navigate(['/eventos', pendingId, 'listo']),
+      next: () => this.router.navigate(['/eventos', pendingId]),
       error: () => {
         this.submitting.set(false);
         this.submitErrorType.set('cover');

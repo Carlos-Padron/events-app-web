@@ -9,9 +9,10 @@ export const routes: Routes = [
     path: 'crear',
     loadComponent: () => import('./create-event/create-event').then((c) => c.CreateEvent),
   },
+
   {
-    path: ':id/listo',
-    loadComponent: () => import('./event-ready/event-ready').then((c) => c.EventReady),
+    path: ':id/capturar',
+    loadComponent: () => import('./capture/capture').then((c) => c.Capture),
   },
   {
     path: ':id',

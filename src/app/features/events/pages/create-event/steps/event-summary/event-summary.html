@@ -1,5 +1,4 @@
 <div class="flex-1 relative overflow-hidden">
-
   <!-- Background: cover photo or default gradient -->
   @if (draft.coverPreviewUrl()) {
     <img
@@ -12,11 +11,12 @@
   }
 
   <!-- Bottom gradient overlay -->
-  <div class="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"></div>
+  <div
+    class="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"
+  ></div>
 
   <!-- Overlaid content -->
   <div class="absolute inset-0 flex flex-col justify-end p-6 gap-3">
-
     <p class="section-label text-ember">✦ Reel</p>
 
     <h1 class="font-display text-4xl text-paper font-light leading-tight">
@@ -28,25 +28,41 @@
     <div class="h-px bg-paper/20"></div>
 
     <div class="flex flex-wrap gap-2">
-      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+      <span
+        class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10"
+      >
         {{ filterLabel() }}
       </span>
-      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+      <span
+        class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10"
+      >
         Hasta {{ draft.data().participantLimit }} inv.
       </span>
-      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+      <span
+        class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10"
+      >
         {{ shotsLabel() }}
       </span>
-      <span class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10">
+      <span
+        class="text-xs bg-paper/10 backdrop-blur-sm text-paper/80 px-3 py-1.5 rounded-full border border-paper/10"
+      >
         {{ revealLabel() }}
       </span>
     </div>
 
     <!-- Error messages -->
     @if (errorType() === 'event') {
-      <p class="text-red-400 text-sm text-center">
-        No se pudo crear el evento. Intenta de nuevo.
-      </p>
+      <div class="flex flex-col gap-1" role="alert">
+        @if (errorMessages().length) {
+          @for (msg of errorMessages(); track msg) {
+            <p class="text-red-400 text-sm text-center">{{ msg }}</p>
+          }
+        } @else {
+          <p class="text-red-400 text-sm text-center">
+            No se pudo crear el evento. Intenta de nuevo.
+          </p>
+        }
+      </div>
     }
 
     @if (errorType() === 'cover') {
@@ -58,16 +74,25 @@
     <!-- Primary action -->
     @if (errorType() === 'cover') {
       <!-- Event already exists — only retry the upload -->
-      <app-button variant="primary" size="lg" [fullWidth]="true"
-        [disabled]="isLoading()" (click)="retryUpload.emit()">
+      <app-button
+        variant="primary"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+        (click)="retryUpload.emit()"
+      >
         {{ isLoading() ? 'Reintentando...' : 'Reintentar subida' }}
       </app-button>
     } @else {
-      <app-button variant="accent" size="lg" [fullWidth]="true"
-        [disabled]="isLoading()" (click)="create.emit()">
+      <app-button
+        variant="accent"
+        size="lg"
+        [fullWidth]="true"
+        [disabled]="isLoading()"
+        (click)="create.emit()"
+      >
         {{ isLoading() ? 'Creando...' : 'Crear film ✦' }}
       </app-button>
     }
-
   </div>
 </div>

@@ -18,6 +18,7 @@ export class EventSummary {
   readonly retryUpload = output<void>();
   readonly isLoading = input(false);
   readonly errorType = input<'event' | 'cover' | null>(null);
+  readonly errorMessages = input<string[]>([]);
 
   filterLabel = computed(() => PHOTO_FILTER_LABELS[this.draft.data().filter]);
 
