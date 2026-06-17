@@ -9,8 +9,10 @@ import {
 import { RouterLink } from '@angular/router';
 import { Button } from '../../../../components/button/button';
 import { Spinner } from '../../../../components/spinner/spinner';
+import { JoinSheet } from '../../components/join-sheet/join-sheet';
+import { BottomNav } from '../../../../components/bottom-nav/bottom-nav';
 import { EventService } from '../../services/event.service';
-import { EventResponse, EventStatus } from '../../../../shared/interfaces/event.interface';
+import { EventSummary, EventStatus } from '../../../../shared/interfaces/event.interface';
 import {
   EventGradient,
   EVENT_GRADIENTS,
@@ -25,13 +27,14 @@ interface EventItem {
   details: string;
   status: EventStatus;
   gradient: EventGradient;
+  coverUrl: string | null;
 }
 
 @Component({
   selector: 'app-home-event',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex-1 flex flex-col min-h-0' },
-  imports: [RouterLink, Button, Spinner],
+  imports: [RouterLink, Button, Spinner, JoinSheet, BottomNav],
   templateUrl: './home.html',
 })
 export class HomeEvent implements OnInit {
@@ -41,7 +44,6 @@ export class HomeEvent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly joinSheetOpen = signal(false);
-  readonly joinCode = signal('');
 
   readonly liveEvents = computed(() => this.events().filter((e) => e.status === 'live'));
   readonly scheduledEvents = computed(() => this.events().filter((e) => e.status === 'scheduled'));
@@ -79,17 +81,18 @@ export class HomeEvent implements OnInit {
     return `relative rounded-2xl overflow-hidden w-full bg-linear-to-br ${EVENT_GRADIENTS[e.gradient]} ${opacity}`;
   }
 
-  private toItem(e: EventResponse, index: number): EventItem {
+  private toItem(e: EventSummary, index: number): EventItem {
     return {
       id: e.id,
       title: e.name,
       details: this.buildDetails(e),
       status: e.status,
       gradient: EVENT_GRADIENT_KEYS[index % EVENT_GRADIENT_KEYS.length],
+      coverUrl: e.coverUrl,
     };
   }
 
-  private buildDetails(e: EventResponse): string {
+  private buildDetails(e: EventSummary): string {
     const photos = `${e.captureCount} fotos`;
     if (e.status === 'live' || e.status === 'scheduled') {
       return `${e.participantCount} participantes · ${photos}`;

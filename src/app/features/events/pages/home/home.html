@@ -31,58 +31,15 @@
   </div>
 </div>
 
+<!-- Join sheet -->
+<app-join-sheet
+  [open]="joinSheetOpen()"
+  (closed)="joinSheetOpen.set(false)"
+  (joined)="joinSheetOpen.set(false)"
+/>
+
 <!-- Scrollable content -->
 <div class="flex-1 overflow-y-auto min-h-0 bg-ink px-6 pt-4 pb-10">
-  <!-- Join event bottom sheet -->
-  @if (joinSheetOpen()) {
-    <div
-      class="fixed inset-0 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="join-sheet-title"
-    >
-      <div
-        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        (click)="joinSheetOpen.set(false)"
-      ></div>
-      <div
-        class="absolute inset-x-0 bottom-0 bg-ink rounded-t-3xl px-6 pt-4 pb-12 flex flex-col gap-5 max-w-sm mx-auto"
-      >
-        <div class="w-10 h-1 bg-paper/20 rounded-full mx-auto"></div>
-        <h2 id="join-sheet-title" class="font-display text-2xl text-paper font-light">
-          Unirse a un <em class="italic text-ember">film</em>
-        </h2>
-        <p class="text-earth text-sm leading-relaxed -mt-2">
-          Ingresa el código de invitación que te compartieron.
-        </p>
-        <input
-          type="text"
-          [value]="joinCode()"
-          (input)="joinCode.set($any($event.target).value)"
-          placeholder="Código de invitación"
-          aria-label="Código de invitación"
-          class="w-full bg-paper/5 border border-paper/20 rounded-xl px-4 py-3 text-paper placeholder:text-earth/40 text-sm focus:outline-none focus:border-ember transition-colors"
-        />
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="joinSheetOpen.set(false)"
-            class="flex-1 text-sm py-3 rounded-full border border-paper/20 text-paper/60 hover:text-paper transition-colors font-semibold"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            [disabled]="!joinCode()"
-            class="flex-1 text-sm py-3 rounded-full bg-ember text-ink font-semibold hover:bg-ember-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Unirse ✦
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
   @if (loading()) {
     <!-- Loading -->
     <div class="flex-1 flex items-center justify-center py-20">
@@ -132,6 +89,14 @@
                 class="aspect-4/3 block"
                 [attr.aria-label]="'Ver detalles de ' + event.title"
               >
+                @if (event.coverUrl) {
+                  <img
+                    [src]="event.coverUrl"
+                    alt=""
+                    aria-hidden="true"
+                    class="absolute inset-0 w-full h-full object-cover"
+                  />
+                }
                 <div
                   class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
                 ></div>
@@ -173,6 +138,14 @@
                 class="aspect-video block"
                 [attr.aria-label]="'Ver detalles de ' + event.title"
               >
+                @if (event.coverUrl) {
+                  <img
+                    [src]="event.coverUrl"
+                    alt=""
+                    aria-hidden="true"
+                    class="absolute inset-0 w-full h-full object-cover"
+                  />
+                }
                 <div
                   class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
                 ></div>
@@ -213,6 +186,14 @@
                 class="aspect-video block"
                 [attr.aria-label]="'Ver detalles de ' + event.title"
               >
+                @if (event.coverUrl) {
+                  <img
+                    [src]="event.coverUrl"
+                    alt=""
+                    aria-hidden="true"
+                    class="absolute inset-0 w-full h-full object-cover"
+                  />
+                }
                 <div
                   class="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent"
                 ></div>
@@ -238,3 +219,5 @@
     </div>
   }
 </div>
+
+<app-bottom-nav />

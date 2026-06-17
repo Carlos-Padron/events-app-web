@@ -1,0 +1,247 @@
+@if (open()) {
+  <div
+    class="fixed inset-0 z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="join-sheet-title"
+  >
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+
+    <!-- Panel -->
+    <div
+      class="absolute inset-x-0 bottom-0 bg-ink rounded-t-3xl px-6 pt-4 pb-12 flex flex-col gap-5 max-w-sm mx-auto"
+    >
+      <div class="w-10 h-1 bg-paper/20 rounded-full mx-auto"></div>
+
+      @if (step() === 'input') {
+        <h2 id="join-sheet-title" class="font-display text-2xl text-paper font-light">
+          Unirse a un <em class="italic text-ember">film</em>
+        </h2>
+
+        <!-- Mode tabs -->
+        <div class="flex gap-1 bg-paper/5 rounded-xl p-1" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="joinMode() === 'code'"
+            (click)="switchMode('code')"
+            [class]="
+              joinMode() === 'code'
+                ? 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg bg-ink text-paper transition-colors'
+                : 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg text-paper/40 hover:text-paper/70 transition-colors'
+            "
+          >
+            <i class="ph ph-keyboard" aria-hidden="true"></i> Código
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="joinMode() === 'qr'"
+            (click)="switchMode('qr')"
+            [class]="
+              joinMode() === 'qr'
+                ? 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg bg-ink text-paper transition-colors'
+                : 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg text-paper/40 hover:text-paper/70 transition-colors'
+            "
+          >
+            <i class="ph ph-qr-code" aria-hidden="true"></i> Código QR
+          </button>
+        </div>
+
+        <!-- Code mode -->
+        @if (joinMode() === 'code') {
+          @if (scanSuccess()) {
+            <div class="flex items-center gap-2 text-ember text-sm -mb-1">
+              <i class="ph ph-check-circle text-lg" aria-hidden="true"></i>
+              Código detectado desde el QR
+            </div>
+          }
+          <input
+            type="text"
+            [value]="joinCode()"
+            (input)="joinCode.set($any($event.target).value)"
+            placeholder="Código de invitación"
+            aria-label="Código de invitación"
+            class="w-full bg-paper/5 border border-paper/20 rounded-xl px-4 py-3 text-paper placeholder:text-earth/40 text-sm focus:outline-none focus:border-ember transition-colors"
+          />
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="close()"
+              class="flex-1 text-sm py-3 rounded-full border border-paper/20 text-paper/60 hover:text-paper transition-colors font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="submit()"
+              [disabled]="!joinCode()"
+              class="flex-1 text-sm py-3 rounded-full bg-ember text-ink font-semibold hover:bg-ember-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Unirse ✦
+            </button>
+          </div>
+        }
+
+        <!-- QR mode -->
+        @if (joinMode() === 'qr') {
+          @if (scanError()) {
+            <div class="flex flex-col items-center gap-4 py-6 text-center">
+              <i class="ph ph-camera-slash text-4xl text-earth" aria-hidden="true"></i>
+              <p class="text-earth text-sm">{{ scanError() }}</p>
+              <button
+                type="button"
+                (click)="startQrCamera()"
+                class="text-sm font-semibold text-ember hover:text-ember-deep transition-colors"
+              >
+                Reintentar
+              </button>
+            </div>
+          } @else {
+            <div class="relative rounded-2xl overflow-hidden aspect-square bg-paper/5">
+              <video
+                #qrVideoEl
+                autoplay
+                playsinline
+                muted
+                class="w-full h-full object-cover"
+                aria-label="Visor de cámara para escanear código QR"
+              ></video>
+              <!-- Corner bracket overlay -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="relative w-48 h-48">
+                  <div
+                    class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-paper rounded-tl"
+                  ></div>
+                  <div
+                    class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-paper rounded-tr"
+                  ></div>
+                  <div
+                    class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-paper rounded-bl"
+                  ></div>
+                  <div
+                    class="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-paper rounded-br"
+                  ></div>
+                </div>
+              </div>
+              <p
+                class="absolute bottom-3 inset-x-0 text-center text-[10px] text-paper/60 tracking-widest uppercase pointer-events-none"
+              >
+                Apunta al código QR
+              </p>
+            </div>
+            <canvas #qrCanvasEl class="hidden" aria-hidden="true"></canvas>
+          }
+          <button
+            type="button"
+            (click)="close()"
+            class="w-full text-sm py-3 rounded-full border border-paper/20 text-paper/60 hover:text-paper transition-colors font-semibold"
+          >
+            Cancelar
+          </button>
+        }
+      }
+
+      @if (step() === 'confirm') {
+        <!-- Back button -->
+        <button
+          type="button"
+          (click)="backToInput()"
+          class="flex items-center gap-1.5 text-xs text-paper/50 hover:text-paper transition-colors -mb-1 self-start"
+          aria-label="Volver al código"
+        >
+          <i class="ph ph-arrow-left" aria-hidden="true"></i> Volver
+        </button>
+
+        <h2 id="join-sheet-title" class="font-display text-2xl text-paper font-light">
+          Confirmar <em class="italic text-ember">invitación</em>
+        </h2>
+
+        <!-- Loading -->
+        @if (previewLoading()) {
+          <div class="flex flex-col items-center gap-4 py-8">
+            <app-spinner size="md" />
+            <p class="text-earth text-sm">Buscando film...</p>
+          </div>
+        }
+
+        <!-- Preview error -->
+        @if (previewError() && !previewLoading()) {
+          <div class="flex flex-col items-center gap-4 py-6 text-center">
+            <i class="ph ph-film-slash text-4xl text-earth" aria-hidden="true"></i>
+            <p class="text-earth text-sm">{{ previewError() }}</p>
+            <button
+              type="button"
+              (click)="backToInput()"
+              class="text-sm font-semibold text-ember hover:text-ember-deep transition-colors"
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        }
+
+        <!-- Event preview card -->
+        @if (eventPreview(); as event) {
+          <div class="flex flex-col gap-4">
+            <div class="bg-paper/5 rounded-2xl p-5 flex flex-col gap-3">
+              <p class="font-display text-2xl text-paper font-light leading-tight">
+                {{ event.name }}
+              </p>
+              <div class="flex flex-col gap-1.5 text-xs text-paper/50">
+                <span class="flex items-center gap-1.5">
+                  <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+                  {{ formatMedium(event.startsAt) }} — {{ formatMedium(event.endsAt) }}
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <i class="ph ph-users" aria-hidden="true"></i>
+                  {{ event.participantCount }} participantes
+                </span>
+              </div>
+              <span
+                class="self-start text-[9px] tracking-widest uppercase font-semibold px-2.5 py-1 rounded-full"
+                [class]="
+                  event.status === 'live'
+                    ? 'bg-sun/10 text-sun'
+                    : event.status === 'scheduled'
+                      ? 'bg-paper/10 text-paper/60'
+                      : 'bg-ember/10 text-ember'
+                "
+              >
+                @if (event.status === 'live') {
+                  <span
+                    class="inline-block w-1.5 h-1.5 bg-sun rounded-full animate-pulse-dot mr-1"
+                  ></span>
+                }
+                {{
+                  event.status === 'live'
+                    ? 'En vivo'
+                    : event.status === 'scheduled'
+                      ? 'Programado'
+                      : 'Finalizado'
+                }}
+              </span>
+            </div>
+
+            @if (joinError()) {
+              <p class="text-crimson text-xs text-center">{{ joinError() }}</p>
+            }
+
+            <button
+              type="button"
+              (click)="confirmJoin()"
+              [disabled]="joinLoading()"
+              class="w-full flex items-center justify-center gap-2 text-sm py-3.5 rounded-full bg-ember text-ink font-semibold hover:bg-ember-deep transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              @if (joinLoading()) {
+                <app-spinner size="sm" />
+              } @else {
+                Aceptar invitación ✦
+              }
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}

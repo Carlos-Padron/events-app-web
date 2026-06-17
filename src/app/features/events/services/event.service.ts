@@ -9,6 +9,7 @@ import {
   CoverUploadUrlResponse,
   CreateEventDto,
   EventResponse,
+  EventSummary,
   PaginatedResponse,
 } from '../../../shared/interfaces/event.interface';
 
@@ -64,9 +65,17 @@ export class EventService {
     return this.http.get<EventResponse>(`${API}${API_ENDPOINTS.events.get(id)}`);
   }
 
-  getMyEvents(page = 1, limit = 50): Observable<PaginatedResponse<EventResponse>> {
+  previewJoin(token: string): Observable<EventResponse> {
+    return this.http.get<EventResponse>(`${API}${API_ENDPOINTS.events.joinPreview(token)}`);
+  }
+
+  joinEvent(token: string): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${API}${API_ENDPOINTS.events.join(token)}`, {});
+  }
+
+  getMyEvents(page = 1, limit = 50): Observable<PaginatedResponse<EventSummary>> {
     const params = { page: String(page), limit: String(limit) };
-    return this.http.get<PaginatedResponse<EventResponse>>(`${API}${API_ENDPOINTS.events.mine}`, {
+    return this.http.get<PaginatedResponse<EventSummary>>(`${API}${API_ENDPOINTS.events.mine}`, {
       params,
     });
   }

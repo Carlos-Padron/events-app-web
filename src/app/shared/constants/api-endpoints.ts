@@ -1,15 +1,17 @@
 export const API_ENDPOINTS = {
   auth: {
-    login:    '/auth/login',
+    login: '/auth/login',
     register: '/auth/register',
-    refresh:  '/auth/refresh',
+    refresh: '/auth/refresh',
   },
   events: {
-    create:         '/event',
-    mine:           '/event/mine',
+    create: '/event',
+    mine: '/event/mine',
     coverUploadUrl: (id: string) => `/event/${id}/cover-upload-url`,
-    patchCover:     (id: string) => `/event/${id}/cover`,
-    get:            (id: string) => `/event/${id}`,
+    patchCover: (id: string) => `/event/${id}/cover`,
+    get: (id: string) => `/event/${id}`,
+    joinPreview: (token: string) => `/invitation/${token}/preview`,
+    join: (token: string) => `/invitation/${token}/join`,
   },
 } as const;
 

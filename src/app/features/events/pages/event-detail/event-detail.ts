@@ -20,10 +20,7 @@ import { EventService } from '../../services/event.service';
 import { CaptureService, Capture } from '../../services/capture.service';
 import { EventResponse } from '../../../../shared/interfaces/event.interface';
 import { EventGradient, EVENT_GRADIENTS } from '../../../../shared/constants/gradients';
-import {
-  EVENT_STATUS_LABELS,
-  PHOTO_FILTER_LABELS,
-} from '../../../../shared/constants/event-labels';
+import { EVENT_STATUS_LABELS } from '../../../../shared/constants/event-labels';
 import { LOCALE } from '../../../../shared/constants/locale';
 import { formatShort } from '../../../../shared/utils/date.util';
 import { buildJoinUrl } from '../../../../shared/utils/join-url.util';
@@ -79,13 +76,8 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
     return e ? EVENT_STATUS_LABELS[e.status] : '';
   });
 
-  readonly filterLabel = computed(() => {
-    const filter = this.event()?.photoFilter;
-    return filter ? PHOTO_FILTER_LABELS[filter] : PHOTO_FILTER_LABELS.normal;
-  });
-
   readonly startsShort = computed(() => formatShort(this.event()?.startsAt));
-  readonly revealShort = computed(() => formatShort(this.event()?.revealAt));
+  readonly endsShort = computed(() => formatShort(this.event()?.endsAt));
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
