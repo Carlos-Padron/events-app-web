@@ -114,11 +114,11 @@ export class JoinSheet implements OnChanges, OnDestroy {
     this.joinLoading.set(true);
     this.joinError.set(null);
     this.eventService.joinEvent(token).subscribe({
-      next: (event) => {
+      next: (response) => {
         this.joinLoading.set(false);
-        this.joined.emit(event.id);
+        this.joined.emit(response.participant.eventId);
         this.closed.emit();
-        this.router.navigate(['/eventos', event.id]);
+        this.router.navigate(['/eventos', response.participant.eventId]);
       },
       error: () => {
         this.joinError.set('No se pudo unirse al film. Intenta de nuevo.');

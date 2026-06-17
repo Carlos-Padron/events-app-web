@@ -10,6 +10,7 @@ import {
   CreateEventDto,
   EventResponse,
   EventSummary,
+  JoinEventResponse,
   PaginatedResponse,
 } from '../../../shared/interfaces/event.interface';
 
@@ -69,8 +70,8 @@ export class EventService {
     return this.http.get<EventResponse>(`${API}${API_ENDPOINTS.events.joinPreview(token)}`);
   }
 
-  joinEvent(token: string): Observable<EventResponse> {
-    return this.http.post<EventResponse>(`${API}${API_ENDPOINTS.events.join(token)}`, {});
+  joinEvent(token: string): Observable<JoinEventResponse> {
+    return this.http.post<JoinEventResponse>(`${API}${API_ENDPOINTS.events.join(token)}`, {});
   }
 
   getMyEvents(page = 1, limit = 50): Observable<PaginatedResponse<EventSummary>> {

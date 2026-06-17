@@ -43,6 +43,15 @@ export interface EventSummary {
   coverUrl: string | null;
 }
 
+export interface JoinEventResponse {
+  participant: {
+    id: string;
+    eventId: string;
+    displayName: string;
+    joinedAt: string;
+  };
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
