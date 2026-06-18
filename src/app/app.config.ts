@@ -7,6 +7,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { authInterceptor } from './common/interceptors/auth-interceptor';
 import { errorInterceptor } from './common/interceptors/error-interceptor';
+import { appDb, AppDb } from './db/app-db';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,5 +16,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideToastr({ positionClass: 'toast-bottom-center', timeOut: 4000, preventDuplicates: true }),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
-  ]
+    { provide: AppDb, useValue: appDb },
+  ],
 };

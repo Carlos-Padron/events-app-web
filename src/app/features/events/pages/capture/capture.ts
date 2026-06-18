@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -9,12 +10,17 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DOCUMENT, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { fromEvent } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../../../shared/interfaces/event.interface';
 import { buildJoinUrl } from '../../../../shared/utils/join-url.util';
+import { CaptureQueueService } from '../../services/capture-queue.service';
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-capture',
@@ -31,6 +37,11 @@ export class Capture implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
   private readonly location = inject(Location);
   private readonly doc = inject(DOCUMENT);
+  private readonly captureQueue = inject(CaptureQueueService);
+  private readonly sync = inject(SyncService);
+  // DestroyRef lets us use takeUntilDestroyed() outside the constructor,
+  // which is required here because the subscription is set up in ngOnInit.
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly event = signal<EventResponse | null>(null);
   readonly loading = signal(true);
@@ -41,6 +52,11 @@ export class Capture implements OnInit, OnDestroy {
   readonly shotsTaken = signal(0);
   readonly lastPhotoUrl = signal<string | null>(null);
   readonly showQr = signal(false);
+  // Aliases into the queue/sync services so the template can read them without
+  // going through the service references directly.
+  readonly pendingCount = this.captureQueue.pendingCount;
+  readonly failedCount = this.captureQueue.failedCount;
+  readonly syncing = this.sync.syncing;
 
   private stream: MediaStream | null = null;
 
@@ -81,11 +97,28 @@ export class Capture implements OnInit, OnDestroy {
     this.eventService.getEvent(id).subscribe({
       next: (e) => {
         this.event.set(e);
+        // Scope the queue's count signals to this event and rehydrate from IndexedDB,
+        // so any items queued in a previous session (e.g. while offline) restore the badge.
+        this.captureQueue.setCurrentEvent(e.id);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
     this.startCamera();
+
+    // Re-trigger sync when the user returns from another tab or app.
+    // SyncService also has a global visibilitychange listener, but that one fires
+    // without knowing the current event ID. This one passes ev.id explicitly so
+    // the service targets the right event even if trigger() was never called yet.
+    fromEvent(this.doc, 'visibilitychange')
+      .pipe(
+        filter(() => this.doc.visibilityState === 'visible'),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        const ev = this.event();
+        if (ev) this.sync.trigger(ev.id);
+      });
   }
 
   ngOnDestroy(): void {
@@ -170,21 +203,56 @@ export class Capture implements OnInit, OnDestroy {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d')!.drawImage(video, 0, 0);
+    // Capture prev BEFORE the async gap so we revoke the correct URL.
+    // If we read lastPhotoUrl() inside the toBlob callback, the user could have
+    // tapped the shutter again by then and we'd revoke the new thumbnail instead.
     const prev = this.lastPhotoUrl();
-    if (prev) URL.revokeObjectURL(prev);
     // 0.92 JPEG quality balances file size vs. visual fidelity.
     // createObjectURL() produces a temporary in-memory URL for the thumbnail preview.
     canvas.toBlob(
-      (blob) => {
-        if (blob) this.lastPhotoUrl.set(URL.createObjectURL(blob));
+      async (blob) => {
+        if (!blob) return;
+        if (prev) URL.revokeObjectURL(prev);
+        this.lastPhotoUrl.set(URL.createObjectURL(blob));
+
+        const ev = this.event()!;
+        await this.captureQueue.enqueue(ev.id, blob, {
+          mediaType: 'image',
+          mimeType: 'image/jpeg',
+          width: canvas.width,
+          height: canvas.height,
+          sizeBytes: blob.size,
+          // Local time with no 'Z'. The backend converts to UTC using the event's
+          // timezone via fromZonedTime(). Sending UTC would apply the offset twice.
+          capturedAt: _formatLocal(new Date()),
+        });
+        this.sync.trigger(ev.id);
       },
       'image/jpeg',
       0.92,
     );
+    // Update counter OUTSIDE the toBlob callback for immediate UI feedback.
+    // The async blob encoding can take tens of milliseconds on low-end devices.
     this.shotsTaken.update((n) => n + 1);
+  }
+
+  // Resets the failed counter's event context and re-runs the sync loop.
+  // Failed items with attempts < MAX_ATTEMPTS will be reset to 'pending' by _resetRetryable().
+  retryFailed(): void {
+    this.sync.trigger(this.event()!.id);
   }
 
   goBack(): void {
     this.location.back();
   }
+}
+
+// Formats a Date as 'YYYY-MM-DDTHH:mm:ss' with NO timezone suffix.
+// The backend expects local time and applies the event's timezone via fromZonedTime().
+function _formatLocal(date: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}` +
+    `T${p(date.getHours())}:${p(date.getMinutes())}:${p(date.getSeconds())}`
+  );
 }

@@ -93,6 +93,18 @@
       </div>
     </div>
 
+    <!-- Failed uploads warning -->
+    @if (failedCount() > 0) {
+      <div class="flex justify-center mb-3 px-8">
+        <button
+          class="bg-crimson/80 backdrop-blur-sm text-paper text-xs px-4 py-2 rounded-full"
+          (click)="retryFailed()"
+        >
+          {{ failedCount() }} {{ failedCount() === 1 ? 'foto' : 'fotos' }} sin subir — Reintentar
+        </button>
+      </div>
+    }
+
     <!-- Shutter row -->
     <div class="flex items-center justify-between px-8">
       <!-- Shot counter -->
@@ -118,14 +130,24 @@
       </div>
 
       <!-- Shutter button -->
-      <button
-        class="w-20 h-20 rounded-full border-4 border-paper flex items-center justify-center transition-transform active:scale-90"
-        [class]="canTakePhoto() ? '' : 'opacity-30 pointer-events-none'"
-        (click)="takePhoto()"
-        aria-label="Tomar foto"
-      >
-        <div class="w-[60px] h-[60px] rounded-full bg-paper"></div>
-      </button>
+      <div class="relative">
+        <button
+          class="w-20 h-20 rounded-full border-4 border-paper flex items-center justify-center transition-transform active:scale-90"
+          [class]="canTakePhoto() ? '' : 'opacity-30 pointer-events-none'"
+          (click)="takePhoto()"
+          aria-label="Tomar foto"
+        >
+          <div class="w-[60px] h-[60px] rounded-full bg-paper"></div>
+        </button>
+        @if (pendingCount() > 0) {
+          <span
+            class="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-ember text-ink text-[10px] font-medium rounded-full flex items-center justify-center"
+            aria-label="{{ pendingCount() }} fotos pendientes de subir"
+          >
+            {{ syncing() ? '↑' : pendingCount() }}
+          </span>
+        }
+      </div>
 
       <!-- Last photo thumbnail -->
       <div class="w-16 h-16 flex justify-end">

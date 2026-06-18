@@ -13,6 +13,10 @@ export const API_ENDPOINTS = {
     joinPreview: (token: string) => `/invitation/${token}/preview`,
     join: (token: string) => `/invitation/${token}/join`,
   },
+  captures: {
+    uploadUrls: (eventId: string) => `/event/${eventId}/captures/upload-urls`,
+    confirmBatch: (eventId: string) => `/event/${eventId}/captures/confirm-batch`,
+  },
 } as const;
 
 // Endpoints that should never trigger the 401 refresh & retry flow.

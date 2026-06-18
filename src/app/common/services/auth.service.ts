@@ -11,11 +11,13 @@ import {
   RefreshResponse,
   RegisterPayload,
 } from '../../shared/interfaces/auth.interface';
+import { CaptureQueueService } from '../../features/events/services/capture-queue.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
+  private readonly captureQueue = inject(CaptureQueueService);
 
   private readonly loginUrl = `${environment.API_ENDPOINT}${API_ENDPOINTS.auth.login}`;
   private readonly registerUrl = `${environment.API_ENDPOINT}${API_ENDPOINTS.auth.register}`;
@@ -47,18 +49,26 @@ export class AuthService {
   }
 
   login(payload: LoginPayload): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(this.loginUrl, payload)
-      .pipe(tap((res) => this.storeTokens(res.accessToken, res.refreshToken)));
+    return this.http.post<AuthResponse>(this.loginUrl, payload).pipe(
+      tap((res) => {
+        // Clear any stale queue from a previous user who didn't explicitly log out.
+        this.captureQueue.clearAll();
+        this.storeTokens(res.accessToken, res.refreshToken);
+      }),
+    );
   }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(this.registerUrl, payload)
-      .pipe(tap((res) => this.storeTokens(res.accessToken, res.refreshToken)));
+    return this.http.post<AuthResponse>(this.registerUrl, payload).pipe(
+      tap((res) => {
+        this.captureQueue.clearAll();
+        this.storeTokens(res.accessToken, res.refreshToken);
+      }),
+    );
   }
 
   logout(): void {
+    this.captureQueue.clearAll(); // clear IndexedDB so the next user on this device starts clean
     this.clearTokens();
     this.router.navigate(['/login']);
   }
@@ -97,6 +107,7 @@ export class AuthService {
         return next(retryReq);
       }),
       catchError((err) => {
+        this.captureQueue.clearAll(); // clear IndexedDB so the next user on this device starts clean
         this.clearTokens();
         this.refreshInProgress = false;
         this.refreshStatus$.next(false); // signal failure so waiting requests can bail out
