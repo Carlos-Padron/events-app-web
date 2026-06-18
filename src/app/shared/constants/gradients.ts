@@ -13,13 +13,3 @@ export const EVENT_GRADIENTS: Record<EventGradient, string> = {
 
 /** Ordered gradient keys, handy for cycling by index. */
 export const EVENT_GRADIENT_KEYS = Object.keys(EVENT_GRADIENTS) as EventGradient[];
-
-/** Placeholder gradient palette for capture tiles (until real images exist). */
-export const CAPTURE_GRADIENTS = [
-  'from-crimson to-ember',
-  'from-ember to-sun',
-  'from-earth to-ink-soft',
-  'from-sage to-earth',
-  'from-crimson-light to-crimson',
-  'from-ember-deep to-earth',
-];

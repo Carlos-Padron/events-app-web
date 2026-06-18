@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Observable, delay, of } from 'rxjs';
-import { CAPTURE_GRADIENTS } from '../../../shared/constants/gradients';
-import { MOCK_CAPTURE_NAMES } from '../mocks/captures.mock';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
+import { CaptureResponse } from '../../../shared/interfaces/capture.interface';
+import { PaginatedResponse } from '../../../shared/interfaces/event.interface';
 
 export interface Capture {
   id: string;
   takenBy: string;
-  gradient: string;
-  isRevealed: boolean;
+  mediaUrl: string | null;
 }
 
 export interface CapturePage {
@@ -16,31 +18,26 @@ export interface CapturePage {
   hasMore: boolean;
 }
 
-const CAPTURES_PER_PAGE = 6;
-const TOTAL_MOCK_PAGES = 3;
-const MOCK_LATENCY_MS = 600;
+const CAPTURES_PER_PAGE = 10;
+
+const API = environment.API_ENDPOINT;
 
 @Injectable({ providedIn: 'root' })
 export class CaptureService {
-  /**
-   * Fetches a page (1-based) of captures for an event.
-   * Currently mocked — swap the body for a real HTTP call when the API exists;
-   * the `CapturePage` contract stays the same.
-   */
-  getCaptures(_eventId: string, page: number): Observable<CapturePage> {
-    const captures = this.generateMockPage(page);
-    return of({ captures, hasMore: page < TOTAL_MOCK_PAGES }).pipe(delay(MOCK_LATENCY_MS));
-  }
+  private readonly http = inject(HttpClient);
 
-  private generateMockPage(page: number): Capture[] {
-    return Array.from({ length: CAPTURES_PER_PAGE }, (_, i) => {
-      const idx = (page - 1) * CAPTURES_PER_PAGE + i;
-      return {
-        id: `mock-${idx}`,
-        takenBy: MOCK_CAPTURE_NAMES[idx % MOCK_CAPTURE_NAMES.length],
-        gradient: CAPTURE_GRADIENTS[idx % CAPTURE_GRADIENTS.length],
-        isRevealed: idx % 4 !== 2,
-      };
-    });
+  /** Fetches a page (1-based) of captures for an event. */
+  getCaptures(eventId: string, page: number, limit = CAPTURES_PER_PAGE): Observable<CapturePage> {
+    const params = { page: String(page), limit: String(limit) };
+    return this.http
+      .get<PaginatedResponse<CaptureResponse>>(`${API}${API_ENDPOINTS.captures.list(eventId)}`, {
+        params,
+      })
+      .pipe(
+        map((res) => ({
+          captures: res.data.map((c) => ({ id: c.id, takenBy: c.takenBy, mediaUrl: c.mediaUrl })),
+          hasMore: res.page < res.totalPages,
+        })),
+      );
   }
 }

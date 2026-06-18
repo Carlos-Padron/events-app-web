@@ -140,7 +140,7 @@
     }
 
     <!-- Momentos -->
-    @if (captures().length > 0 || capturesLoading()) {
+    @if (captures().length > 0 || capturesLoading() || !hasMore()) {
       <div class="px-4 pt-2 pb-4 flex flex-col gap-3">
         <p
           class="text-xs font-display uppercase tracking-widest text-ember px-2 pt-4"
@@ -149,26 +149,96 @@
           ✦ Momentos
         </p>
 
+        @if (captures().length === 0 && !capturesLoading()) {
+          <div class="flex flex-col items-center gap-2 py-8 text-center">
+            <i class="ph ph-image text-paper/20 text-3xl" aria-hidden="true"></i>
+            <p class="text-paper/40 text-xs">Aún no hay fotos en este evento.</p>
+          </div>
+        }
+
         <div class="grid grid-cols-2 gap-2" role="list" aria-label="Fotos del evento">
-          @for (capture of captures(); track capture.id) {
+          @for (capture of captures(); track capture.id; let i = $index) {
             <div role="listitem" class="flex flex-col gap-1">
-              <div class="relative aspect-square rounded-xl overflow-hidden">
-                <div class="absolute inset-0 bg-linear-to-br" [class]="capture.gradient"></div>
-                @if (!capture.isRevealed) {
-                  <div
-                    class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1.5"
+              @if (capture.mediaUrl) {
+                @if (canPreview()) {
+                  <button
+                    class="relative aspect-square rounded-xl overflow-hidden block w-full"
+                    (click)="openPreview(i)"
+                    aria-label="Ver foto de {{ capture.takenBy }}"
                   >
-                    <i class="ph ph-lock-simple text-paper/60 text-xl" aria-hidden="true"></i>
-                    <span class="text-paper/50 text-[10px] uppercase tracking-wider"
-                      >Por revelar</span
-                    >
+                    <img
+                      [src]="capture.mediaUrl"
+                      alt=""
+                      class="absolute inset-0 w-full h-full object-cover"
+                    />
+                  </button>
+                } @else {
+                  <div
+                    class="relative aspect-square rounded-xl overflow-hidden"
+                    aria-label="Foto disponible cuando el evento termine"
+                  >
+                    <img
+                      [src]="capture.mediaUrl"
+                      alt=""
+                      class="absolute inset-0 w-full h-full object-cover blur-md scale-110"
+                    />
                   </div>
                 }
-              </div>
+              } @else {
+                <div
+                  class="relative aspect-square rounded-xl overflow-hidden bg-ink-soft flex items-center justify-center"
+                >
+                  <i class="ph ph-image text-paper/30 text-2xl" aria-hidden="true"></i>
+                </div>
+              }
               <p class="text-paper/50 text-xs px-1 truncate">{{ capture.takenBy }}</p>
             </div>
           }
         </div>
+      </div>
+    }
+
+    <!-- Photo preview overlay -->
+    @if (previewCapture()) {
+      <div
+        class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-20"
+        (click)="closePreview()"
+        role="dialog"
+        aria-label="Vista previa de foto"
+      >
+        <button
+          class="absolute top-10 right-4 w-9 h-9 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-paper"
+          (click)="$event.stopPropagation(); closePreview()"
+          aria-label="Cerrar vista previa"
+        >
+          <i class="ph ph-x text-lg"></i>
+        </button>
+
+        <img
+          [src]="previewCapture()!.mediaUrl"
+          alt="Foto de {{ previewCapture()!.takenBy }}"
+          class="max-w-full max-h-[70vh] object-contain"
+          (click)="$event.stopPropagation()"
+        />
+
+        <p class="text-paper/60 text-xs mt-4">{{ previewCapture()!.takenBy }}</p>
+
+        <button
+          class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-paper disabled:opacity-30"
+          (click)="$event.stopPropagation(); prevPreview()"
+          [disabled]="!hasPrevPreview()"
+          aria-label="Foto anterior"
+        >
+          <i class="ph ph-caret-left text-lg"></i>
+        </button>
+        <button
+          class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-paper disabled:opacity-30"
+          (click)="$event.stopPropagation(); nextPreview()"
+          [disabled]="!hasNextPreview()"
+          aria-label="Foto siguiente"
+        >
+          <i class="ph ph-caret-right text-lg"></i>
+        </button>
       </div>
     }
   } @else {

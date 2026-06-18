@@ -29,7 +29,7 @@ import { ClipboardService, COPY_FEEDBACK_MS } from '../../../../common/services/
 @Component({
   selector: 'app-event-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex-1 flex flex-col' },
+  host: { class: 'flex-1 flex flex-col', '(keydown.escape)': 'closePreview()' },
   imports: [QRCodeComponent, Spinner],
   templateUrl: './event-detail.html',
 })
@@ -53,6 +53,7 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   readonly captures = signal<Capture[]>([]);
   readonly capturesLoading = signal(false);
   readonly hasMore = signal(true);
+  readonly previewIndex = signal<number | null>(null);
 
   private capturesPage = 0;
   private observer: IntersectionObserver | null = null;
@@ -86,6 +87,20 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
     return hasLimit ? e!.shotsRemaining : null;
   });
 
+  // Photos can only be opened once the event has ended — while live/scheduled,
+  // the grid stays a non-interactive preview.
+  readonly canPreview = computed(() => this.event()?.status === 'closed');
+
+  readonly previewCapture = computed(() => {
+    const i = this.previewIndex();
+    return i === null ? null : (this.captures()[i] ?? null);
+  });
+
+  readonly hasPrevPreview = computed(() => (this.previewIndex() ?? 0) > 0);
+  readonly hasNextPreview = computed(
+    () => (this.previewIndex() ?? -1) < this.captures().length - 1,
+  );
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.eventService.getEvent(id).subscribe({
@@ -108,6 +123,23 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
       { threshold: 0.1 },
     );
     this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  openPreview(index: number): void {
+    if (!this.canPreview()) return;
+    this.previewIndex.set(index);
+  }
+
+  closePreview(): void {
+    this.previewIndex.set(null);
+  }
+
+  prevPreview(): void {
+    if (this.hasPrevPreview()) this.previewIndex.update((i) => i! - 1);
+  }
+
+  nextPreview(): void {
+    if (this.hasNextPreview()) this.previewIndex.update((i) => i! + 1);
   }
 
   ngOnDestroy(): void {

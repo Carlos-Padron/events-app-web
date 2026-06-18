@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     join: (token: string) => `/invitation/${token}/join`,
   },
   captures: {
+    list: (eventId: string) => `/event/${eventId}/captures`,
     uploadUrls: (eventId: string) => `/event/${eventId}/captures/upload-urls`,
     confirmBatch: (eventId: string) => `/event/${eventId}/captures/confirm-batch`,
   },
