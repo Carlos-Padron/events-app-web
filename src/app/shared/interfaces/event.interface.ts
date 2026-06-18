@@ -26,6 +26,8 @@ export interface EventResponse {
   status: EventStatus;
   maxParticipants: number | null;
   maxShotsPerParticipant: number | null;
+  shotsTaken: number;
+  shotsRemaining: number;
   participantCount: number;
   captureCount: number;
   coverUrl: string | null;

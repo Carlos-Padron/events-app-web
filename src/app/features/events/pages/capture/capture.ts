@@ -16,6 +16,7 @@ import { ActivatedRoute } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
+import { Spinner } from '../../../../components/spinner/spinner';
 import { EventService } from '../../services/event.service';
 import { EventResponse } from '../../../../shared/interfaces/event.interface';
 import { buildJoinUrl } from '../../../../shared/utils/join-url.util';
@@ -26,7 +27,7 @@ import { SyncService } from '../../services/sync.service';
   selector: 'app-capture',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex-1 flex flex-col' },
-  imports: [QRCodeComponent],
+  imports: [QRCodeComponent, Spinner],
   templateUrl: './capture.html',
 })
 export class Capture implements OnInit, OnDestroy {
@@ -45,6 +46,7 @@ export class Capture implements OnInit, OnDestroy {
 
   readonly event = signal<EventResponse | null>(null);
   readonly loading = signal(true);
+  readonly eventLoadError = signal(false);
   readonly cameraError = signal<string | null>(null);
   readonly facingMode = signal<'environment' | 'user'>('environment');
   readonly zoom = signal<1 | 2>(1);
@@ -87,9 +89,17 @@ export class Capture implements OnInit, OnDestroy {
   });
 
   readonly canTakePhoto = computed(() => {
-    const max = this.event()?.maxShotsPerParticipant;
+    const e = this.event();
+    if (!e) return false;
+    const max = e.maxShotsPerParticipant;
     if (!max || max === -1) return true;
     return this.shotsTaken() < max;
+  });
+
+  readonly shotsLeft = computed(() => {
+    const max = this.event()?.maxShotsPerParticipant;
+    const hasLimit = !!max && max > 0 && max !== -1;
+    return hasLimit ? max! - this.shotsTaken() : null;
   });
 
   ngOnInit(): void {
@@ -97,12 +107,18 @@ export class Capture implements OnInit, OnDestroy {
     this.eventService.getEvent(id).subscribe({
       next: (e) => {
         this.event.set(e);
+        // Seed from the backend's count instead of leaving it at 0, so the shot
+        // counter reflects reality on reload rather than resetting every mount.
+        this.shotsTaken.set(e.shotsTaken);
         // Scope the queue's count signals to this event and rehydrate from IndexedDB,
         // so any items queued in a previous session (e.g. while offline) restore the badge.
         this.captureQueue.setCurrentEvent(e.id);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.eventLoadError.set(true);
+        this.loading.set(false);
+      },
     });
     this.startCamera();
 

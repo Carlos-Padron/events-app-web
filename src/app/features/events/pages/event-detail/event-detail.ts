@@ -79,6 +79,13 @@ export class EventDetail implements OnInit, AfterViewInit, OnDestroy {
   readonly startsShort = computed(() => formatShort(this.event()?.startsAt));
   readonly endsShort = computed(() => formatShort(this.event()?.endsAt));
 
+  readonly shotsLeft = computed(() => {
+    const e = this.event();
+    const max = e?.maxShotsPerParticipant;
+    const hasLimit = !!max && max > 0 && max !== -1;
+    return hasLimit ? e!.shotsRemaining : null;
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.eventService.getEvent(id).subscribe({

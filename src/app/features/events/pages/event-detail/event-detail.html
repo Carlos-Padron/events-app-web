@@ -79,6 +79,10 @@
         </div>
         @if (captureError()) {
           <p class="text-xs text-crimson-light text-center px-4 pb-3 -mt-1">{{ captureError() }}</p>
+        } @else if (shotsLeft() !== null) {
+          <p class="text-xs text-earth text-center px-4 pb-3 -mt-1">
+            {{ shotsLeft() }} fotos restantes
+          </p>
         }
       </div>
     }

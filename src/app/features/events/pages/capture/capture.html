@@ -9,7 +9,16 @@
   ></video>
   <canvas #canvasEl class="hidden"></canvas>
 
-  @if (cameraError()) {
+  @if (eventLoadError()) {
+    <div
+      class="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8 bg-black/80 z-10"
+    >
+      <p class="text-paper/50 text-sm text-center">No se pudo cargar el evento.</p>
+      <button class="px-4 py-2 bg-paper/10 rounded-full text-paper text-sm" (click)="goBack()">
+        Volver
+      </button>
+    </div>
+  } @else if (cameraError()) {
     <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8">
       <p class="text-paper/50 text-sm text-center">{{ cameraError() }}</p>
       <button class="px-4 py-2 bg-paper/10 rounded-full text-paper text-sm" (click)="startCamera()">
@@ -109,24 +118,33 @@
     <div class="flex items-center justify-between px-8">
       <!-- Shot counter -->
       <div class="w-16 flex justify-start">
-        <div
-          class="bg-black/60 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center gap-1.5"
-          aria-label="Contador de fotos"
-        >
-          @if (shotDisplay().prev !== null) {
-            <span class="text-paper/30 text-xs font-display leading-none">{{
-              shotDisplay().prev
+        @if (loading()) {
+          <div
+            class="bg-black/60 backdrop-blur-sm rounded-2xl px-3 py-2 h-9 w-12 animate-pulse"
+          ></div>
+        } @else {
+          <div
+            class="bg-black/60 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center gap-1.5"
+            aria-label="Contador de fotos"
+          >
+            @if (shotDisplay().prev !== null) {
+              <span class="text-paper/30 text-xs font-display leading-none">{{
+                shotDisplay().prev
+              }}</span>
+            }
+            <span class="text-paper font-display text-xl font-light leading-none">{{
+              shotDisplay().current
             }}</span>
+            @if (shotDisplay().next !== null) {
+              <span class="text-paper/30 text-xs font-display leading-none">{{
+                shotDisplay().next
+              }}</span>
+            }
+          </div>
+          @if (shotsLeft() !== null) {
+            <p class="text-paper/50 text-xs mt-1.5 text-center">{{ shotsLeft() }} restantes</p>
           }
-          <span class="text-paper font-display text-xl font-light leading-none">{{
-            shotDisplay().current
-          }}</span>
-          @if (shotDisplay().next !== null) {
-            <span class="text-paper/30 text-xs font-display leading-none">{{
-              shotDisplay().next
-            }}</span>
-          }
-        </div>
+        }
       </div>
 
       <!-- Shutter button -->
@@ -137,7 +155,11 @@
           (click)="takePhoto()"
           aria-label="Tomar foto"
         >
-          <div class="w-[60px] h-[60px] rounded-full bg-paper"></div>
+          @if (loading()) {
+            <app-spinner size="sm" />
+          } @else {
+            <div class="w-[60px] h-[60px] rounded-full bg-paper"></div>
+          }
         </button>
         @if (pendingCount() > 0) {
           <span
